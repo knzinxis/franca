@@ -1,0 +1,14 @@
+FRANÇA KN 00 — SITE
+
+Abra o arquivo index.html em um navegador para visualizar o site.
+A imagem enviada como referência está em assets/referencia-original.jpeg e foi copiada sem alterações.
+
+Esta é uma primeira versão estática e responsiva:
+- visual inspirado na referência enviada;
+- formulário com validação no navegador;
+- menu e janela de Painel ADM demonstrativos.
+
+IMPORTANTE:
+O formulário ainda não envia os dados para a guilda nem guarda candidaturas em um servidor.
+O painel ADM ainda não possui login real. Para publicar com recebimento de inscrições,
+aprovação/reprovação e acesso privado, é necessário configurar hospedagem e backend seguro.

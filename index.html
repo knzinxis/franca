@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030817">
+  <meta name="description" content="FRANÇA KN 00 — Guilda competitiva de Free Fire.">
+  <title>FRANÇA KN 00 | Guilda Free Fire</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">☰</button>
+    <a class="brand" href="#inicio" aria-label="França início">
+      <span class="tiny-eiffel">♜</span><span class="blue-slash">◢</span> FRANÇA <span class="red-slash">◣</span>
+    </a>
+    <a class="admin-link" href="#painel" id="adminOpen">♢ <span>PAINEL ADM</span></a>
+  </header>
+
+  <nav class="drawer" id="drawer">
+    <a href="#inicio">Início</a><a href="#historia">Nossa história</a>
+    <a href="#regras">Regras</a><a href="#recrutamento">Recrutamento</a>
+    <button id="closeMenu">Fechar menu</button>
+  </nav>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-copy">
+        <p class="eyebrow">A Q U I &nbsp; É</p>
+        <h1>FRANÇA!</h1>
+        <p class="subtitle">GUILDA COMPETITIVA DE FREE FIRE</p>
+      </div>
+      <div class="crest" aria-label="Escudo França KN 00">
+        <span>FRANÇA</span><small>KN 00</small><b>♜</b>
+      </div>
+    </section>
+
+    <section class="main-card">
+      <div class="values">
+        <div><b class="blue">♟</b><strong>FOCO</strong><span>EM EQUIPE</span></div>
+        <div><b>◎</b><strong>DISCIPLINA</strong><span>SEMPRE</span></div>
+        <div><b class="red">🏆</b><strong>COMPETIÇÃO</strong><span>É NOSSA META</span></div>
+        <div><b>✦</b><strong>HONRA</strong><span>ACIMA DE TUDO</span></div>
+      </div>
+      <div class="stripe"></div>
+
+      <section class="recruit" id="recrutamento">
+        <p class="section-kicker">SEJA DA GUILDA</p>
+        <h2><span></span> RECRUTAMENTO <span></span></h2>
+        <p class="muted intro">Preencha o formulário e faça parte da família França!</p>
+
+        <form id="applicationForm">
+          <label class="field"><span>♙</span><input name="nome" placeholder="Nome ou apelido" required></label>
+          <label class="field"><span>▦</span><input name="idade" type="number" min="10" max="99" placeholder="Idade" required></label>
+          <label class="field"><span>▣</span><input name="idJogo" placeholder="ID do Free Fire" required></label>
+          <label class="field"><span>◉</span><input name="whatsapp" type="tel" placeholder="WhatsApp com DDD" required></label>
+          <div class="field experience">
+            <span class="question">Já participou de competitivo?</span>
+            <label><input type="radio" name="competitivo" value="Sim" required> <i></i> Sim</label>
+            <label><input type="radio" name="competitivo" value="Não"> <i></i> Não</label>
+          </div>
+          <label class="field"><span>◷</span><input name="disponibilidade" placeholder="Disponibilidade para treinos (Ex.: Noite)" required></label>
+          <label class="field textarea-field"><span>▤</span><textarea name="sobre" maxlength="200" placeholder="Fale um pouco sobre você" required></textarea><small id="counter">0/200</small></label>
+          <label class="consent"><input type="checkbox" required> <span>Ao enviar, você autoriza o contato pelo WhatsApp sobre sua inscrição e o resultado do recrutamento. Declaro que li e aceito as regras da guilda.</span></label>
+          <button class="submit-btn" type="submit">➤ &nbsp; ENVIAR INSCRIÇÃO</button>
+          <p class="form-note" id="formMessage" role="status"></p>
+        </form>
+      </section>
+    </section>
+
+    <section class="why" id="historia">
+      <p class="section-kicker">POR QUE SER FRANÇA?</p>
+      <div class="why-grid">
+        <div><b class="blue">♟</b><strong>TIME UNIDO</strong><span>Jogamos juntos,<br> vencemos juntos.</span></div>
+        <div><b>▥</b><strong>EVOLUÇÃO</strong><span>Treinos, estratégias<br> e melhoria constante.</span></div>
+        <div><b class="red">✪</b><strong>RESPEITO</strong><span>Ambiente leve,<br> mas competitivo.</span></div>
+        <div><b>♜</b><strong>ORGULHO</strong><span>Representamos<br> a França!</span></div>
+      </div>
+    </section>
+
+    <section class="info-card" id="historia-detalhe">
+      <h2>NOSSA HISTÓRIA</h2>
+      <p>A França nasceu para dar oportunidade a novos jogadores de disputar grandes campeonatos e guerras de guilda. Aqui construímos uma família, amizades e evolução dentro e fora das partidas.</p>
+    </section>
+    <section class="info-card" id="regras">
+      <h2>REGRAS DA FRANÇA</h2>
+      <ul>
+        <li>Respeito é obrigatório com todos os integrantes.</li>
+        <li>Não arrume brigas; resolva conflitos com sabedoria e no privado.</li>
+        <li>Respeite as meninas e todos os membros da guilda.</li>
+        <li>É proibido enviar figurinhas ou conteúdo +18.</li>
+        <li>A tag da guilda <strong>FRA</strong> é obrigatória.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>© 2026 <strong>FRANÇA KN 00.</strong> TODOS OS DIREITOS RESERVADOS.</footer>
+
+  <dialog id="adminDialog">
+    <form method="dialog" class="dialog-close"><button aria-label="Fechar">×</button></form>
+    <p class="section-kicker">ÁREA RESTRITA</p><h2>PAINEL ADM</h2>
+    <p class="muted">A área administrativa precisa ser conectada a um servidor com autenticação para proteger os dados e as inscrições.</p>
+    <p class="muted">Esta versão é a interface pública do site; nenhum painel privado ou armazenamento seguro foi ativado.</p>
+    <button class="submit-btn" id="adminClose">FECHAR</button>
+  </dialog>
+  <script src="script.js"></script>
+</body>
+</html>
