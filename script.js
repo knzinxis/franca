@@ -36,12 +36,21 @@ form.addEventListener('submit',async e=>{
       },
       body:JSON.stringify(recruit)
     });
+
     if(!response.ok) throw new Error(`Erro ${response.status}`);
-    document.getElementById('formMessage').textContent='🎉 Parabéns! Seu formulário foi enviado com sucesso! Entraremos em contato em breve para informar sobre o resultado do seu recrutamento.';
+    document.getElementById('formMessage').textContent='';
     form.reset();
+    const successDialog=document.getElementById('successDialog');
+    if(typeof successDialog.showModal==='function'){
+      successDialog.showModal();
+    }
   }catch(error){
     document.getElementById('formMessage').textContent='Não foi possível enviar agora. Verifique sua conexão e tente novamente.';
   }finally{
     submitButton.disabled=false;
   }
+});
+
+document.getElementById('closeSuccess').addEventListener('click',()=>{
+  document.getElementById('successDialog').close();
 });
