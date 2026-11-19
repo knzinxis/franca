@@ -28,6 +28,19 @@ async function getRecords(){
   return response.json();
 }
 
+async function getRecord(id){
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${encodeURIComponent(id)}&select=*`,{
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:`Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if(!response.ok) throw new Error(`Erro ao buscar a inscrição (${response.status}).`);
+  const records=await response.json();
+  if(!records.length) throw new Error('Inscrição não encontrada.');
+  return records[0];
+}
+
 async function render(){
   try{
     const records=await getRecords();
@@ -91,23 +104,27 @@ list.addEventListener('click',async event=>{
   if(!button)return;
   const id=button.dataset.id;
   const action=button.dataset.action;
-  if(action==='whatsapp'||action==='aprovar'){
-    const phone=normalizeWhatsAppPhone(button.dataset.whatsapp);
-    if(action==='aprovar'){
-      const whatsappWindow=phone?window.open('about:blank','_blank'):null;
-      try{
-        await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
-        if(phone){
-          openWhatsapp(phone,approvalMessage,whatsappWindow);
-        }else{
-          alert('Candidato aprovado, mas o WhatsApp cadastrado não é válido.');
-        }
-        render();
-      }catch(error){
+  if(action==='aprovar'){
+    const whatsappWindow=window.open('about:blank','_blank');
+    try{
+      const candidate=await getRecord(id);
+      await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
+      const phone=normalizeWhatsAppPhone(candidate.whatsapp);
+      if(phone){
+        openWhatsapp(phone,buildApprovalMessage(candidate),whatsappWindow);
+      }else{
         if(whatsappWindow)whatsappWindow.close();
-        alert(`Não foi possível aprovar o candidato: ${error.message}`);
+        alert('Candidato aprovado, mas o WhatsApp cadastrado não é válido.');
       }
-    }else if(!phone){
+      render();
+    }catch(error){
+      if(whatsappWindow)whatsappWindow.close();
+      alert(`Não foi possível aprovar o candidato: ${error.message}`);
+    }
+    return;
+  }else if(action==='whatsapp'){
+    const phone=normalizeWhatsAppPhone(button.dataset.whatsapp);
+    if(!phone){
       alert('Este candidato não informou um WhatsApp válido.');
     }else{
       openWhatsapp(
@@ -156,33 +173,54 @@ async function deleteRecord(id){
   });
 }
 
-const approvalMessage=`🏆 PARABÉNS! VOCÊ FOI APROVADO! 🇫🇷🔥
+function buildApprovalMessage(candidate){
+  return `PARABÉNS! VOCÊ FOI APROVADO! 🇫🇷🏆
 
 Seja muito bem-vindo à GUILDA FRANÇA!
 
 Você passou pelo nosso teste e agora faz parte da nossa família! 💪
 
-Nossa guilda é focada em COMPETITIVO, então esperamos dedicação, respeito, compromisso e vontade de evoluir junto com a equipe.
+Nossa guilda é focada em COMPETITIVO, então esperamos dedicação, respeito, compromisso e vontade de evoluir junto com a equipe
 
-📜 REGRAS DA GUILDA FRANÇA
+REGRAS DA GUILDA FRANÇA 📝
 
-1. Respeitar todos os membros da guilda.
-2. Ter compromisso com os treinos e campeonatos.
-3. Manter a comunicação e ouvir as estratégias do time.
-4. Não causar brigas ou discussões desnecessárias.
-5. Respeitar a liderança e as decisões dos responsáveis.
-6. Não abandonar partidas competitivas sem justificativa.
-7. Manter uma boa conduta dentro e fora da guilda.
-8. Proibido usar hack, script ou qualquer tipo de trapaça.
-9. Participar dos grupos oficiais e acompanhar os avisos.
-10. Representar a GUILDA FRANÇA com respeito e dedicação.
+1 Respeitar todos os membros da guilda
 
-🔥 NOSSO OBJETIVO É CRESCER E DOMINAR O COMPETITIVO!
+2 Ter compromisso com os treinos e campeonatos
 
-📲 ENTRE NO GRUPO OFICIAL DA GUILDA:
+3 Manter a comunicação e ouvir as estratégias do time
+
+4 Não causar brigas ou discussões desnecessárias
+
+5 Respeitar a liderança e as decisões dos responsáveis
+
+6 Não abandonar partidas competitivas sem justificativa
+
+7 Manter uma boa conduta dentro e fora da guilda
+
+8 Proibido usar hack, script ou qualquer tipo de trapaça
+
+9 Participar dos grupos oficiais e acompanhar os avisos
+
+10 Representar a GUILDA FRANÇA com respeito e dedicação
+
+NOSSO OBJETIVO É CRESCER E DOMINAR O COMPETITIVO!
+
+ENTRE NO GRUPO 📲 OFICIAL DA GUILDA
+
 ${GUILD_GROUP_URL}
 
-🇫🇷 Seja bem-vindo à família FRANÇA! Vamos pra cima! 🚀`;
+Seja bem-vindo à família FRANÇA! Vamos pra cima! 🇫🇷
+
+DADOS DO CANDIDATO
+
+👤 Nome completo: ${candidate.nome_completo||'Não informado'}
+🆔 ID: ${candidate.id_jogo||'Não informado'}
+🎮 Nick do jogo: ${candidate.nick_jogo||'Não informado'}
+📱 Número do WhatsApp: ${candidate.whatsapp||'Não informado'}
+🏅 Função: ${candidate.funcoes||'Não informado'}
+🕒 Horário disponível: ${candidate.disponibilidade||'Não informado'}`;
+}
 
 function normalizeWhatsAppPhone(value){
   const input=String(value||'').trim();
