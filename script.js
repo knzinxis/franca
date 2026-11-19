@@ -37,13 +37,22 @@ form.addEventListener('submit',async e=>{
       body:JSON.stringify(recruit)
     });
 
-    if(!response.ok) throw new Error(`Erro ${response.status}`);
-    document.getElementById('formMessage').textContent='';
+    let saved=false;
+    if(response.ok) saved=true;
+    if(!saved){
+      await new Promise(resolve=>setTimeout(resolve,700));
+      const verify=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?select=id&id_jogo=eq.${encodeURIComponent(fields.idJogo)}&nick_jogo=eq.${encodeURIComponent(fields.nickJogo)}&limit=1`,{
+        headers:{
+          'apikey':SUPABASE_KEY,
+          'Authorization':`Bearer ${SUPABASE_KEY}`
+        }
+      });
+      saved=verify.ok && (await verify.json()).length>0;
+    }
+    if(!saved) throw new Error('Inscrição não confirmada');
     form.reset();
     const successDialog=document.getElementById('successDialog');
-    if(typeof successDialog.showModal==='function'){
-      successDialog.showModal();
-    }
+    if(typeof successDialog.showModal==='function') successDialog.showModal();
   }catch(error){
     document.getElementById('formMessage').textContent='Não foi possível enviar agora. Verifique sua conexão e tente novamente.';
   }finally{
