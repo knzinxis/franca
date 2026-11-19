@@ -1,23 +1,47 @@
+const SUPABASE_URL='https://eynwuwakthzpbxxzvifl.supabase.co';
+const SUPABASE_KEY='sb_publishable_d8wfzUDD2mBv_obeWJmDnQ_QBWD-FSL';
 const drawer=document.getElementById('drawer');
 document.getElementById('menuBtn').addEventListener('click',()=>drawer.classList.toggle('open'));
 document.getElementById('closeMenu').addEventListener('click',()=>drawer.classList.remove('open'));
 drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>drawer.classList.remove('open')));
 const form=document.getElementById('applicationForm');
-form.addEventListener('submit',e=>{
+form.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!form.reportValidity()) return;
-  const data=Object.fromEntries(new FormData(form).entries());
-  data.nome=data.nomeCompleto;
-  data.funcao=[...form.querySelectorAll('input[name="funcao"]:checked')].map(input=>input.value).join(', ');
-  if(!data.funcao){
+  const fields=Object.fromEntries(new FormData(form).entries());
+  const funcoes=[...form.querySelectorAll('input[name="funcao"]:checked')].map(input=>input.value).join(', ');
+  if(!funcoes){
     document.getElementById('formMessage').textContent='Selecione pelo menos uma função.';
     return;
   }
-  data.status='Pendente';
-  data.data=new Date().toISOString();
-  const records=JSON.parse(localStorage.getItem('francaRecrutamentos')||'[]');
-  records.unshift(data);
-  localStorage.setItem('francaRecrutamentos',JSON.stringify(records));
-  document.getElementById('formMessage').textContent='🎉 Parabéns! Seu formulário foi enviado com sucesso! Entraremos em contato em breve para informar sobre o resultado do seu recrutamento.';
-  form.reset();
+  const submitButton=form.querySelector('button[type="submit"]');
+  submitButton.disabled=true;
+  const recruit={
+    nome_completo:fields.nomeCompleto,
+    nick_jogo:fields.nickJogo,
+    id_jogo:fields.idJogo,
+    whatsapp:fields.whatsapp,
+    funcoes,
+    disponibilidade:fields.disponibilidade,
+    status:'Pendente'
+  };
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments`,{
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify(recruit)
+    });
+    if(!response.ok) throw new Error(`Erro ${response.status}`);
+    document.getElementById('formMessage').textContent='🎉 Parabéns! Seu formulário foi enviado com sucesso! Entraremos em contato em breve para informar sobre o resultado do seu recrutamento.';
+    form.reset();
+  }catch(error){
+    document.getElementById('formMessage').textContent='Não foi possível enviar agora. Verifique sua conexão e tente novamente.';
+  }finally{
+    submitButton.disabled=false;
+  }
 });
