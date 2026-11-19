@@ -108,6 +108,15 @@ list.addEventListener('click', (event) => {
   if (button.dataset.action !== 'aprovar') saveRecords(records);
 });
 
+approvedList.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-approved-index]');
+  if (!button) return;
+  const records = getRecords();
+  const index = Number(button.dataset.approvedIndex);
+  records[index].status = 'Removido';
+  saveRecords(records);
+});
+
 function openWhatsapp(record, template) {
   const phone = String(record.whatsapp || '').replace(/\D/g, '');
   if (!phone) {
