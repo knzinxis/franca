@@ -27,6 +27,7 @@ function render() {
   const records = getRecords();
   if (!records.length) {
     list.innerHTML = '<p class="empty">Nenhum recrutamento recebido.</p>';
+    renderApproved();
     return;
   }
   list.innerHTML = records.map((item, index) => `
