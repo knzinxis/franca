@@ -43,7 +43,8 @@ function render() {
         <p><strong>Sobre:</strong> ${escapeHtml(item.sobre || '-')}</p>
       </div>
       <div class="candidate-actions">
-        <button class="approve" data-action="aprovar" data-index="${index}">APROVAR</button>
+        <button class="approve" data-action="aprovar" data-index="${index}">APROVAR E CHAMAR</button>
+        <button class="approve" data-action="whatsapp" data-index="${index}">WHATSAPP</button>
         <button class="reject" data-action="rejeitar" data-index="${index}">REJEITAR</button>
         <button class="delete" data-action="excluir" data-index="${index}">EXCLUIR</button>
       </div>
@@ -56,11 +57,27 @@ list.addEventListener('click', (event) => {
   if (!button) return;
   const records = getRecords();
   const index = Number(button.dataset.index);
-  if (button.dataset.action === 'aprovar') records[index].status = 'Aprovado';
+  if (button.dataset.action === 'aprovar') {
+    records[index].status = 'Aprovado';
+    saveRecords(records);
+    openWhatsapp(records[index], 'Olá, ${nome}! Sua inscrição na guilda FRANÇA foi aprovada. Seja bem-vindo(a) à família!');
+  }
+  if (button.dataset.action === 'whatsapp') openWhatsapp(records[index], 'Olá, ${nome}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.');
   if (button.dataset.action === 'rejeitar') records[index].status = 'Rejeitado';
   if (button.dataset.action === 'excluir') records.splice(index, 1);
-  saveRecords(records);
+  if (button.dataset.action !== 'aprovar') saveRecords(records);
 });
+
+function openWhatsapp(record, template) {
+  const phone = String(record.whatsapp || '').replace(/\D/g, '');
+  if (!phone) {
+    alert('Este candidato não informou um WhatsApp válido.');
+    return;
+  }
+  const nome = String(record.nome || 'candidato');
+  const message = template.replace('${nome}', nome);
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+}
 
 document.querySelector('#export-button').addEventListener('click', () => {
   const records = getRecords();
