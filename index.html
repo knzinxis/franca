@@ -40,15 +40,15 @@
         <p class="muted intro">Preencha o formulário e faça parte da família França!</p>
 
         <form id="applicationForm">
-          <label class="field"><span>♙</span><input name="nome" placeholder="Nome ou apelido" required></label>
-          <label class="field"><span>▦</span><input name="idade" type="number" min="10" max="99" placeholder="Idade" required></label>
-          <label class="field"><span>▣</span><input name="idJogo" placeholder="ID do Free Fire" required></label>
-          <label class="field"><span>◉</span><input name="whatsapp" type="tel" placeholder="WhatsApp com DDD" required></label>
-          <div class="field experience">
-            <span class="question">Já participou de competitivo?</span>
-            <label><input type="radio" name="competitivo" value="Sim" required> <i></i> Sim</label>
-            <label><input type="radio" name="competitivo" value="Não"> <i></i> Não</label>
-          </div>
+          <label class="field"><span>♙</span><input name="nomeCompleto" placeholder="Nome completo" autocomplete="name" required></label>
+          <label class="field"><span>♛</span><input name="nickJogo" placeholder="Nick do jogo" required></label>
+          <label class="field"><span>▣</span><input name="idJogo" placeholder="ID do jogo" required></label>
+          <label class="field whatsapp-field">
+            <span class="whatsapp-logo" aria-hidden="true">
+              <svg viewBox="0 0 32 32" role="img"><path d="M16 3A13 13 0 0 0 5 22.7L3.3 29l6.5-1.7A13 13 0 1 0 16 3zm0 23.8a10.8 10.8 0 0 1-5.5-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A10.8 10.8 0 1 1 16 26.8zm5.9-8.1c-.3-.2-1.9-.9-2.2-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-1.9-.9-3.2-1.7-4.5-3.9-.3-.6.3-.5 1-1.7.1-.2 0-.5 0-.7l-1-2.4c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.7.1-1 .5-.3.3-1.3 1.3-1.3 3.1s1.3 3.6 1.5 3.8c.2.2 2.6 4 6.4 5.6.9.4 1.6.6 2.1.8.9.3 1.7.2 2.3.1.7-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.2-.2-.5-.3-.8-.5z"/></svg>
+            </span>
+            <input name="whatsapp" type="tel" inputmode="tel" placeholder="Número do WhatsApp" autocomplete="tel" required>
+          </label>
           <fieldset class="field role-field">
             <legend>Função que você joga</legend>
             <label><input type="checkbox" name="funcao" value="Suporte"> Suporte</label>
@@ -62,7 +62,6 @@
             <option value="À noite">À noite</option>
             <option value="Dia e noite">Dia e noite</option>
           </select></label>
-          <label class="field textarea-field"><span>▤</span><textarea name="sobre" maxlength="200" placeholder="Fale um pouco sobre você" required></textarea><small id="counter">0/200</small></label>
           <label class="consent"><input type="checkbox" required> <span>Ao enviar, você autoriza o contato pelo WhatsApp sobre sua inscrição e o resultado do recrutamento. Declaro que li e aceito as regras da guilda.</span></label>
           <button class="submit-btn" type="submit">➤ &nbsp; ENVIAR INSCRIÇÃO</button>
           <p class="form-note" id="formMessage" role="status"></p>

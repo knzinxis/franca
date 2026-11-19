@@ -38,6 +38,7 @@ function render() {
       </div>
       <div class="candidate-grid">
         <p><strong>Idade:</strong> ${escapeHtml(item.idade || '-')}</p>
+        <p><strong>Nick:</strong> ${escapeHtml(item.nickJogo || item.nome || '-')}</p>
         <p><strong>ID:</strong> ${escapeHtml(item.idJogo || '-')}</p>
         <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp || '-')}</p>
         <p><strong>Competitivo:</strong> ${escapeHtml(item.competitivo || '-')}</p>
@@ -75,7 +76,10 @@ function renderApproved() {
         <div class="candidate-grid">
           <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp || '-')}</p>
           <p><strong>Data da aprovação:</strong> ${approvedAt}</p>
+          <p><strong>Nick:</strong> ${escapeHtml(item.nickJogo || '-')}</p>
           <p><strong>ID:</strong> ${escapeHtml(item.idJogo || '-')}</p>
+          <p><strong>Função:</strong> ${escapeHtml(item.funcao || '-')}</p>
+          <p><strong>Disponibilidade:</strong> ${escapeHtml(item.disponibilidade || '-')}</p>
         </div>
         <div class="candidate-actions">
           <button class="delete" data-approved-index="${index}">REMOVER MEMBRO</button>
@@ -133,7 +137,7 @@ function openWhatsapp(record, template) {
 document.querySelector('#export-button').addEventListener('click', () => {
   const records = getRecords();
   if (!records.length) return;
-  const fields = ['nome','idade','idJogo','whatsapp','competitivo','funcao','disponibilidade','sobre','status','data','approvedAt'];
+  const fields = ['nomeCompleto','nickJogo','idJogo','whatsapp','funcao','disponibilidade','status','data','approvedAt'];
   const rows = [fields.join(';'), ...records.map(row => fields.map(field => `"${String(row[field] || '').replaceAll('"','""')}"`).join(';'))];
   const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
