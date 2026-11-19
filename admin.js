@@ -2,6 +2,7 @@ const PIN = '2026';
 const loginBox = document.querySelector('#login-box');
 const panel = document.querySelector('#panel');
 const list = document.querySelector('#candidate-list');
+const approvedList = document.querySelector('#approved-list');
 
 document.querySelector('#login-button').addEventListener('click', () => {
   if (document.querySelector('#admin-pin').value === PIN) {
@@ -50,15 +51,54 @@ function render() {
       </div>
     </article>
   `).join('');
+  renderApproved();
+}
+
+function renderApproved() {
+  const records = getRecords();
+  const approved = records.filter((item) => item.status === 'Aprovado');
+  if (!approved.length) {
+    approvedList.innerHTML = '<p class="empty">Nenhum membro aprovado.</p>';
+    return;
+  }
+  approvedList.innerHTML = approved.map((item) => {
+    const index = getRecords().indexOf(item);
+    const approvedAt = item.approvedAt ? new Date(item.approvedAt).toLocaleString('pt-BR') : '-';
+    return `
+      <article class="candidate">
+        <div class="candidate-top">
+          <h2>${escapeHtml(item.nome || 'Sem nome')}</h2>
+          <strong class="candidate-status">APROVADO</strong>
+        </div>
+        <div class="candidate-grid">
+          <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp || '-')}</p>
+          <p><strong>Data da aprovação:</strong> ${approvedAt}</p>
+          <p><strong>ID:</strong> ${escapeHtml(item.idJogo || '-')}</p>
+        </div>
+        <div class="candidate-actions">
+          <button class="delete" data-approved-index="${index}">REMOVER MEMBRO</button>
+        </div>
+      </article>
+    `;
+  }).join('');
 }
 
 list.addEventListener('click', (event) => {
+  const approvedButton = event.target.closest('button[data-approved-index]');
+  if (approvedButton) {
+    const records = getRecords();
+    const index = Number(approvedButton.dataset.approvedIndex);
+    records[index].status = 'Removido';
+    saveRecords(records);
+    return;
+  }
   const button = event.target.closest('button[data-action]');
   if (!button) return;
   const records = getRecords();
   const index = Number(button.dataset.index);
   if (button.dataset.action === 'aprovar') {
     records[index].status = 'Aprovado';
+    records[index].approvedAt = new Date().toISOString();
     saveRecords(records);
     openWhatsapp(records[index], 'Olá, ${nome}! Sua inscrição na guilda FRANÇA foi aprovada. Seja bem-vindo(a) à família! Entre no grupo oficial aqui: https://chat.whatsapp.com/L2ZZ9HAqWnd2NurHhAuAiX?s=cl&p=i&iam=2');
   }
