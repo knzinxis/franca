@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Guilda França</title>
+  <link rel="stylesheet" href="style.css?v=20261119g">
+  <style>
+    body{min-height:100vh}.admin-page{max-width:1100px;margin:auto;padding:22px}.admin-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.admin-head h1{margin:0;font-size:24px}.admin-actions{display:flex;gap:8px}.admin-actions button,.candidate-actions button{border:0;border-radius:7px;padding:10px 12px;color:white;font-weight:800;cursor:pointer}.admin-export{background:#0872f8}.admin-clear{background:#a91d32}.candidate-list{display:grid;gap:12px}.candidate{background:#10182b;border:1px solid #263553;border-radius:10px;padding:16px}.candidate-top{display:flex;justify-content:space-between;gap:12px}.candidate h2{margin:0;font-size:18px}.candidate-status{color:#f5c451;font-size:12px}.candidate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.candidate-grid p{margin:0;color:#c0c8d8;font-size:13px}.candidate-actions{display:flex;gap:8px}.approve{background:#0872f8}.reject{background:#d52a3f}.delete{background:#4b5568}.login-box{max-width:380px;margin:80px auto;background:#10182b;border:1px solid #263553;border-radius:12px;padding:24px}.login-box h1{margin-top:0}.login-box input{width:100%;height:48px;margin:12px 0;border:1px solid #324768;border-radius:7px;background:#090f20;color:white;padding:0 12px}.login-box button{width:100%;height:48px;border:0;border-radius:7px;background:linear-gradient(90deg,#0872f8,#ed1c35);color:white;font-weight:900}.empty{text-align:center;color:#9da7ba;padding:40px}.hidden{display:none}@media(max-width:700px){.candidate-grid{grid-template-columns:1fr}.candidate-top{align-items:flex-start}.admin-head{align-items:flex-start}.admin-head h1{font-size:18px}.admin-actions{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="admin-page">
+    <section class="login-box" id="login-box">
+      <h1>Painel da França</h1>
+      <p>Digite o PIN administrativo.</p>
+      <input id="admin-pin" type="password" inputmode="numeric" placeholder="PIN">
+      <button id="login-button">ENTRAR</button>
+    </section>
+    <section id="panel" class="hidden">
+      <div class="admin-head">
+        <h1>Recrutamentos</h1>
+        <div class="admin-actions">
+          <button class="admin-export" id="export-button">EXPORTAR CSV</button>
+          <button class="admin-clear" id="clear-button">LIMPAR</button>
+        </div>
+      </div>
+      <div class="candidate-list" id="candidate-list"></div>
+    </section>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

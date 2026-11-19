@@ -9,11 +9,11 @@ form.addEventListener('submit',e=>{
   e.preventDefault();
   if(!form.reportValidity()) return;
   const data=Object.fromEntries(new FormData(form).entries());
-  // Nesta versão estática, a inscrição fica apenas nesta sessão do navegador.
-  // Para receber candidaturas e usar painel ADM, é necessário conectar um backend.
-  document.getElementById('formMessage').textContent='Inscrição preenchida! Para enviar e receber a candidatura, conecte o site ao sistema da guilda.';
-  console.log('Candidatura preenchida:',data);
+  data.status='Pendente';
+  data.data=new Date().toISOString();
+  const records=JSON.parse(localStorage.getItem('francaRecrutamentos')||'[]');
+  records.unshift(data);
+  localStorage.setItem('francaRecrutamentos',JSON.stringify(records));
+  document.getElementById('formMessage').textContent='Inscrição enviada! Aguarde o contato da liderança.';
+  form.reset();
 });
-const dialog=document.getElementById('adminDialog');
-document.getElementById('adminOpen').addEventListener('click',e=>{e.preventDefault();dialog.showModal()});
-document.getElementById('adminClose').addEventListener('click',()=>dialog.close());
