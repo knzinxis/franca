@@ -1,6 +1,7 @@
 const PIN='2026';
 const SUPABASE_URL='https://eynwuwakthzpbxxzvifl.supabase.co';
 const SUPABASE_KEY='sb_publishable_d8wfzUDD2mBv_obeWJmDnQ_QBWD-FSL';
+const GUILD_GROUP_URL='https://chat.whatsapp.com/L2ZZ9HAqWnd2NurHhAuAiX?s=cl&p=i&iam=2';
 const loginBox=document.querySelector('#login-box');
 const panel=document.querySelector('#panel');
 const list=document.querySelector('#candidate-list');
@@ -91,15 +92,21 @@ list.addEventListener('click',async event=>{
   const id=button.dataset.id;
   const action=button.dataset.action;
   if(action==='whatsapp'||action==='aprovar'){
-    const records=await getRecords();
-    const item=records.find(record=>String(record.id)===String(id));
-    if(action==='aprovar'){
-      await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
-      await render();
+    const whatsappWindow=window.open('about:blank','_blank');
+    try{
+      const records=await getRecords();
+      const item=records.find(record=>String(record.id)===String(id));
+      if(!item)throw new Error('Inscrição não encontrada.');
+      if(action==='aprovar'){
+        await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
+        openWhatsapp(item,approvalMessage,whatsappWindow);
+      }else{
+        openWhatsapp(item,`Olá, ${item.nome_completo||'candidato'}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.`,whatsappWindow);
+      }
+    }catch(error){
+      if(whatsappWindow)whatsappWindow.close();
+      alert(`Não foi possível concluir a ação: ${error.message}`);
     }
-    if(item)openWhatsapp(item,action==='aprovar'
-      ?'Olá, ${nome}! Sua inscrição na guilda FRANÇA foi aprovada. Seja bem-vindo(a) à família! Entre no grupo oficial aqui: https://chat.whatsapp.com/L2ZZ9HAqWnd2NurHhAuAiX?s=cl&p=i&iam=2'
-      :'Olá, ${nome}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.');
   }else if(action==='rejeitar'){
     await updateRecord(id,{status:'Rejeitado'});
   }else if(action==='excluir'||action==='remover'){
@@ -116,7 +123,7 @@ approvedList.addEventListener('click',async event=>{
 });
 
 async function updateRecord(id,data){
-  await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${id}`,{
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${id}`,{
     method:'PATCH',
     headers:{
       apikey:SUPABASE_KEY,
@@ -126,6 +133,7 @@ async function updateRecord(id,data){
     },
     body:JSON.stringify(data)
   });
+  if(!response.ok)throw new Error(`Erro ao salvar a decisão (${response.status}).`);
 }
 
 async function deleteRecord(id){
@@ -138,11 +146,46 @@ async function deleteRecord(id){
   });
 }
 
-function openWhatsapp(record,template){
+const approvalMessage=`🏆 PARABÉNS! VOCÊ FOI APROVADO! 🇫🇷🔥
+
+Seja muito bem-vindo à GUILDA FRANÇA!
+
+Você passou pelo nosso teste e agora faz parte da nossa família! 💪
+
+Nossa guilda é focada em COMPETITIVO, então esperamos dedicação, respeito, compromisso e vontade de evoluir junto com a equipe.
+
+📜 REGRAS DA GUILDA FRANÇA
+
+1. Respeitar todos os membros da guilda.
+2. Ter compromisso com os treinos e campeonatos.
+3. Manter a comunicação e ouvir as estratégias do time.
+4. Não causar brigas ou discussões desnecessárias.
+5. Respeitar a liderança e as decisões dos responsáveis.
+6. Não abandonar partidas competitivas sem justificativa.
+7. Manter uma boa conduta dentro e fora da guilda.
+8. Proibido usar hack, script ou qualquer tipo de trapaça.
+9. Participar dos grupos oficiais e acompanhar os avisos.
+10. Representar a GUILDA FRANÇA com respeito e dedicação.
+
+🔥 NOSSO OBJETIVO É CRESCER E DOMINAR O COMPETITIVO!
+
+📲 ENTRE NO GRUPO OFICIAL DA GUILDA:
+${GUILD_GROUP_URL}
+
+🇫🇷 Seja bem-vindo à família FRANÇA! Vamos pra cima! 🚀`;
+
+function openWhatsapp(record,message,whatsappWindow){
   const phone=String(record.whatsapp||'').replace(/\D/g,'');
-  if(!phone){alert('Este candidato não informou um WhatsApp válido.');return;}
-  const message=template.replace('${nome}',record.nome_completo||'candidato');
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');
+  if(!phone){
+    if(whatsappWindow)whatsappWindow.close();
+    alert('Este candidato não informou um WhatsApp válido.');
+    return;
+  }
+  if(!whatsappWindow){
+    alert('Permita pop-ups para abrir o WhatsApp do candidato.');
+    return;
+  }
+  whatsappWindow.location.href=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
 document.querySelector('#export-button').addEventListener('click',async()=>{
