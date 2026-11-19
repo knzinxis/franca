@@ -41,6 +41,7 @@ function render() {
         <p><strong>ID:</strong> ${escapeHtml(item.idJogo || '-')}</p>
         <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp || '-')}</p>
         <p><strong>Competitivo:</strong> ${escapeHtml(item.competitivo || '-')}</p>
+        <p><strong>Função:</strong> ${escapeHtml(item.funcao || '-')}</p>
         <p><strong>Disponibilidade:</strong> ${escapeHtml(item.disponibilidade || '-')}</p>
         <p><strong>Sobre:</strong> ${escapeHtml(item.sobre || '-')}</p>
       </div>
@@ -132,7 +133,7 @@ function openWhatsapp(record, template) {
 document.querySelector('#export-button').addEventListener('click', () => {
   const records = getRecords();
   if (!records.length) return;
-  const fields = ['nome','idade','idJogo','whatsapp','competitivo','disponibilidade','sobre','status','data'];
+  const fields = ['nome','idade','idJogo','whatsapp','competitivo','funcao','disponibilidade','sobre','status','data','approvedAt'];
   const rows = [fields.join(';'), ...records.map(row => fields.map(field => `"${String(row[field] || '').replaceAll('"','""')}"`).join(';'))];
   const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);

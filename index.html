@@ -49,7 +49,19 @@
             <label><input type="radio" name="competitivo" value="Sim" required> <i></i> Sim</label>
             <label><input type="radio" name="competitivo" value="Não"> <i></i> Não</label>
           </div>
-          <label class="field"><span>◷</span><input name="disponibilidade" placeholder="Disponibilidade para treinos (Ex.: Noite)" required></label>
+          <fieldset class="field role-field">
+            <legend>Função que você joga</legend>
+            <label><input type="checkbox" name="funcao" value="Suporte"> Suporte</label>
+            <label><input type="checkbox" name="funcao" value="Rush"> Rush</label>
+            <label><input type="checkbox" name="funcao" value="Granadeiro"> Granadeiro</label>
+            <label><input type="checkbox" name="funcao" value="Todas as funções"> Todas as funções</label>
+          </fieldset>
+          <label class="field"><span>◷</span><select name="disponibilidade" required>
+            <option value="">Disponibilidade de horário</option>
+            <option value="Durante o dia">Durante o dia</option>
+            <option value="À noite">À noite</option>
+            <option value="Dia e noite">Dia e noite</option>
+          </select></label>
           <label class="field textarea-field"><span>▤</span><textarea name="sobre" maxlength="200" placeholder="Fale um pouco sobre você" required></textarea><small id="counter">0/200</small></label>
           <label class="consent"><input type="checkbox" required> <span>Ao enviar, você autoriza o contato pelo WhatsApp sobre sua inscrição e o resultado do recrutamento. Declaro que li e aceito as regras da guilda.</span></label>
           <button class="submit-btn" type="submit">➤ &nbsp; ENVIAR INSCRIÇÃO</button>
