@@ -60,7 +60,7 @@ list.addEventListener('click', (event) => {
   if (button.dataset.action === 'aprovar') {
     records[index].status = 'Aprovado';
     saveRecords(records);
-    openWhatsapp(records[index], 'Olá, ${nome}! Sua inscrição na guilda FRANÇA foi aprovada. Seja bem-vindo(a) à família!');
+    openWhatsapp(records[index], 'Olá, ${nome}! Sua inscrição na guilda FRANÇA foi aprovada. Seja bem-vindo(a) à família! Entre no grupo oficial aqui: https://chat.whatsapp.com/L2ZZ9HAqWnd2NurHhAuAiX?s=cl&p=i&iam=2');
   }
   if (button.dataset.action === 'whatsapp') openWhatsapp(records[index], 'Olá, ${nome}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.');
   if (button.dataset.action === 'rejeitar') records[index].status = 'Rejeitado';
