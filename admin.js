@@ -49,8 +49,8 @@ async function render(){
             <p><strong>Recebido em:</strong> ${item.created_at?new Date(item.created_at).toLocaleString('pt-BR'):'-'}</p>
           </div>
           <div class="candidate-actions">
-            <button class="approve" data-action="aprovar" data-id="${item.id}">APROVAR E CHAMAR</button>
-            <button class="approve" data-action="whatsapp" data-id="${item.id}">WHATSAPP</button>
+            <button class="approve" data-action="aprovar" data-id="${item.id}" data-whatsapp="${escapeHtml(item.whatsapp||'')}">APROVAR E CHAMAR</button>
+            <button class="approve" data-action="whatsapp" data-id="${item.id}" data-whatsapp="${escapeHtml(item.whatsapp||'')}" data-name="${escapeHtml(item.nome_completo||'candidato')}">WHATSAPP</button>
             <button class="reject" data-action="rejeitar" data-id="${item.id}">REJEITAR</button>
             <button class="delete" data-action="excluir" data-id="${item.id}">EXCLUIR</button>
           </div>
@@ -92,21 +92,31 @@ list.addEventListener('click',async event=>{
   const id=button.dataset.id;
   const action=button.dataset.action;
   if(action==='whatsapp'||action==='aprovar'){
-    const whatsappWindow=window.open('about:blank','_blank');
-    try{
-      const records=await getRecords();
-      const item=records.find(record=>String(record.id)===String(id));
-      if(!item)throw new Error('Inscrição não encontrada.');
-      if(action==='aprovar'){
+    const phone=normalizeWhatsAppPhone(button.dataset.whatsapp);
+    if(action==='aprovar'){
+      const whatsappWindow=phone?window.open('about:blank','_blank'):null;
+      try{
         await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
-        openWhatsapp(item,approvalMessage,whatsappWindow);
-      }else{
-        openWhatsapp(item,`Olá, ${item.nome_completo||'candidato'}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.`,whatsappWindow);
+        if(phone){
+          openWhatsapp(phone,approvalMessage,whatsappWindow);
+        }else{
+          alert('Candidato aprovado, mas o WhatsApp cadastrado não é válido.');
+        }
+        render();
+      }catch(error){
+        if(whatsappWindow)whatsappWindow.close();
+        alert(`Não foi possível aprovar o candidato: ${error.message}`);
       }
-    }catch(error){
-      if(whatsappWindow)whatsappWindow.close();
-      alert(`Não foi possível concluir a ação: ${error.message}`);
+    }else if(!phone){
+      alert('Este candidato não informou um WhatsApp válido.');
+    }else{
+      openWhatsapp(
+        phone,
+        `Olá, ${button.dataset.name||'candidato'}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.`,
+        window.open('about:blank','_blank')
+      );
     }
+    return;
   }else if(action==='rejeitar'){
     await updateRecord(id,{status:'Rejeitado'});
   }else if(action==='excluir'||action==='remover'){
@@ -174,18 +184,29 @@ ${GUILD_GROUP_URL}
 
 🇫🇷 Seja bem-vindo à família FRANÇA! Vamos pra cima! 🚀`;
 
-function openWhatsapp(record,message,whatsappWindow){
-  const phone=String(record.whatsapp||'').replace(/\D/g,'');
-  if(!phone){
-    if(whatsappWindow)whatsappWindow.close();
-    alert('Este candidato não informou um WhatsApp válido.');
+function normalizeWhatsAppPhone(value){
+  const input=String(value||'').trim();
+  let phone=input.replace(/\D/g,'');
+  if(input.startsWith('00')){
+    phone=phone.slice(2);
+  }else if(!input.startsWith('+')){
+    if(phone.startsWith('0')&&(phone.length===11||phone.length===12)){
+      phone=phone.slice(1);
+    }
+    if(phone.length===10||phone.length===11){
+      phone=`55${phone}`;
+    }
+  }
+  return phone.length>=10&&phone.length<=15?phone:'';
+}
+
+function openWhatsapp(phone,message,whatsappWindow){
+  const url=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  if(whatsappWindow&&!whatsappWindow.closed){
+    whatsappWindow.location.href=url;
     return;
   }
-  if(!whatsappWindow){
-    alert('Permita pop-ups para abrir o WhatsApp do candidato.');
-    return;
-  }
-  whatsappWindow.location.href=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.location.assign(url);
 }
 
 document.querySelector('#export-button').addEventListener('click',async()=>{
