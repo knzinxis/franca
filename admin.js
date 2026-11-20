@@ -1,176 +1,278 @@
-const PIN='2026';
 const SUPABASE_URL='https://eynwuwakthzpbxxzvifl.supabase.co';
 const SUPABASE_KEY='sb_publishable_d8wfzUDD2mBv_obeWJmDnQ_QBWD-FSL';
 const GUILD_GROUP_URL='https://chat.whatsapp.com/L2ZZ9HAqWnd2NurHhAuAiX?s=cl&p=i&iam=2';
+const SESSION_STORAGE_KEY='franca-admin-session';
 const loginBox=document.querySelector('#login-box');
+const loginForm=document.querySelector('#login-form');
+const loginMessage=document.querySelector('#login-message');
 const panel=document.querySelector('#panel');
+const panelMessage=document.querySelector('#panel-message');
 const list=document.querySelector('#candidate-list');
 const approvedList=document.querySelector('#approved-list');
+const searchInput=document.querySelector('#candidate-search');
+const statusFilter=document.querySelector('#status-filter');
+const noteDrafts=new Map();
+let session=loadSession();
+let records=[];
 
-document.querySelector('#login-button').addEventListener('click',()=>{
-  if(document.querySelector('#admin-pin').value===PIN){
-    loginBox.classList.add('hidden');
-    panel.classList.remove('hidden');
-    render();
-  }else{
-    alert('PIN incorreto.');
+function loadSession(){
+  const saved=sessionStorage.getItem(SESSION_STORAGE_KEY);
+  if(!saved)return null;
+  try{
+    return JSON.parse(saved);
+  }catch(error){
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    return null;
   }
-});
+}
 
-async function getRecords(){
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?select=*&order=created_at.desc`,{
+function saveSession(value){
+  session=value;
+  sessionStorage.setItem(SESSION_STORAGE_KEY,JSON.stringify(value));
+}
+
+function clearSession(){
+  session=null;
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+function showMessage(element,message,type){
+  element.textContent=message;
+  element.className=`notice ${type||''}`.trim();
+}
+
+async function responseError(response,fallback){
+  const text=await response.text();
+  let detail=text;
+  if(text){
+    try{
+      const body=JSON.parse(text);
+      detail=body.msg||body.message||body.error_description||body.error||text;
+    }catch(error){
+      detail=text;
+    }
+  }
+  return new Error(`${fallback} (${response.status})${detail?`: ${detail}`:''}`);
+}
+
+async function authenticate(email,password){
+  const response=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+    method:'POST',
     headers:{
       apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({email,password})
+  });
+  if(!response.ok)throw await responseError(response,'Não foi possível entrar');
+  const value=await response.json();
+  if(!value.access_token||!value.refresh_token||!value.user||!value.user.id){
+    throw new Error('O serviço de autenticação retornou uma sessão inválida.');
+  }
+  saveSession(value);
+  try{
+    await verifyAdmin();
+  }catch(error){
+    clearSession();
+    throw error;
+  }
+}
+
+async function refreshSession(){
+  if(!session||!session.refresh_token)throw new Error('Sua sessão expirou. Entre novamente.');
+  const response=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{
+    method:'POST',
+    headers:{
+      apikey:SUPABASE_KEY,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({refresh_token:session.refresh_token})
+  });
+  if(!response.ok){
+    const error=await responseError(response,'Sua sessão expirou');
+    clearSession();
+    throw error;
+  }
+  const value=await response.json();
+  if(!value.access_token||!value.refresh_token||!value.user){
+    clearSession();
+    throw new Error('Não foi possível renovar a sessão. Entre novamente.');
+  }
+  saveSession(value);
+}
+
+async function authenticatedFetch(path,options){
+  if(!session||!session.access_token)throw new Error('Sua sessão expirou. Entre novamente.');
+  const send=()=>fetch(`${SUPABASE_URL}${path}`,{
+    ...options,
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:`Bearer ${session.access_token}`,
+      ...(options&&options.headers?options.headers:{})
     }
   });
-  if(!response.ok) throw new Error(`Erro ${response.status}`);
+  let response=await send();
+  if(response.status===401&&session.refresh_token){
+    await refreshSession();
+    response=await send();
+  }
+  if(!response.ok)throw await responseError(response,'Falha ao acessar os dados');
+  return response;
+}
+
+async function verifyAdmin(){
+  if(!session||!session.user||!session.user.id)throw new Error('Entre com sua conta administrativa.');
+  const params=new URLSearchParams({
+    select:'user_id',
+    user_id:`eq.${session.user.id}`,
+    limit:'1'
+  });
+  const response=await authenticatedFetch(`/rest/v1/admin_users?${params}`);
+  const admins=await response.json();
+  if(!admins.length)throw new Error('Esta conta não tem permissão de administrador.');
+}
+
+async function getRecords(){
+  const response=await authenticatedFetch('/rest/v1/recruitments?select=*&order=created_at.desc');
   return response.json();
 }
 
 async function getRecord(id){
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${encodeURIComponent(id)}&select=*`,{
-    headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`
-    }
-  });
-  if(!response.ok) throw new Error(`Erro ao buscar a inscrição (${response.status}).`);
-  const records=await response.json();
-  if(!records.length) throw new Error('Inscrição não encontrada.');
-  return records[0];
+  const params=new URLSearchParams({select:'*',id:`eq.${id}`,limit:'1'});
+  const response=await authenticatedFetch(`/rest/v1/recruitments?${params}`);
+  const result=await response.json();
+  if(!result.length)throw new Error('Inscrição não encontrada.');
+  return result[0];
 }
-
-async function render(){
-  try{
-    const records=await getRecords();
-    if(!records.length){
-      list.innerHTML='<p class="empty">Nenhum recrutamento recebido.</p>';
-    }else{
-      list.innerHTML=records.map(item=>`
-        <article class="candidate">
-          <div class="candidate-top">
-            <h2>${escapeHtml(item.nome_completo||'Sem nome')}</h2>
-            <strong class="candidate-status">${escapeHtml(item.status||'Pendente')}</strong>
-          </div>
-          <div class="candidate-grid">
-            <p><strong>Nick:</strong> ${escapeHtml(item.nick_jogo||'-')}</p>
-            <p><strong>ID:</strong> ${escapeHtml(item.id_jogo||'-')}</p>
-            <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp||'-')}</p>
-            <p><strong>Função:</strong> ${escapeHtml(item.funcoes||'-')}</p>
-            <p><strong>Disponibilidade:</strong> ${escapeHtml(item.disponibilidade||'-')}</p>
-            <p><strong>Recebido em:</strong> ${item.created_at?new Date(item.created_at).toLocaleString('pt-BR'):'-'}</p>
-          </div>
-          <div class="candidate-actions">
-            <button class="approve" data-action="aprovar" data-id="${item.id}" data-whatsapp="${escapeHtml(item.whatsapp||'')}">APROVAR E CHAMAR</button>
-            <button class="approve" data-action="whatsapp" data-id="${item.id}" data-whatsapp="${escapeHtml(item.whatsapp||'')}" data-name="${escapeHtml(item.nome_completo||'candidato')}">WHATSAPP</button>
-            <button class="reject" data-action="rejeitar" data-id="${item.id}">REJEITAR</button>
-            <button class="delete" data-action="excluir" data-id="${item.id}">EXCLUIR</button>
-          </div>
-        </article>
-      `).join('');
-    }
-    const approved=records.filter(item=>item.status==='Aprovado');
-    if(!approved.length){
-      approvedList.innerHTML='<p class="empty">Nenhum membro aprovado.</p>';
-    }else{
-      approvedList.innerHTML=approved.map(item=>`
-        <article class="candidate">
-          <div class="candidate-top">
-            <h2>${escapeHtml(item.nome_completo||'Sem nome')}</h2>
-            <strong class="candidate-status">APROVADO</strong>
-          </div>
-          <div class="candidate-grid">
-            <p><strong>Nick:</strong> ${escapeHtml(item.nick_jogo||'-')}</p>
-            <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp||'-')}</p>
-            <p><strong>ID:</strong> ${escapeHtml(item.id_jogo||'-')}</p>
-            <p><strong>Função:</strong> ${escapeHtml(item.funcoes||'-')}</p>
-            <p><strong>Disponibilidade:</strong> ${escapeHtml(item.disponibilidade||'-')}</p>
-            <p><strong>Data da aprovação:</strong> ${item.approved_at?new Date(item.approved_at).toLocaleString('pt-BR'):'-'}</p>
-          </div>
-          <div class="candidate-actions">
-            <button class="delete" data-action="remover" data-id="${item.id}">REMOVER MEMBRO</button>
-          </div>
-        </article>
-      `).join('');
-    }
-  }catch(error){
-    list.innerHTML='<p class="empty">Não foi possível carregar os recrutamentos.</p>';
-  }
-}
-
-list.addEventListener('click',async event=>{
-  const button=event.target.closest('button[data-action]');
-  if(!button)return;
-  const id=button.dataset.id;
-  const action=button.dataset.action;
-  if(action==='aprovar'){
-    const whatsappWindow=window.open('about:blank','_blank');
-    try{
-      const candidate=await getRecord(id);
-      await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
-      const phone=normalizeWhatsAppPhone(candidate.whatsapp);
-      if(phone){
-        openWhatsapp(phone,buildApprovalMessage(candidate),whatsappWindow);
-      }else{
-        if(whatsappWindow)whatsappWindow.close();
-        alert('Candidato aprovado, mas o WhatsApp cadastrado não é válido.');
-      }
-      render();
-    }catch(error){
-      if(whatsappWindow)whatsappWindow.close();
-      alert(`Não foi possível aprovar o candidato: ${error.message}`);
-    }
-    return;
-  }else if(action==='whatsapp'){
-    const phone=normalizeWhatsAppPhone(button.dataset.whatsapp);
-    if(!phone){
-      alert('Este candidato não informou um WhatsApp válido.');
-    }else{
-      openWhatsapp(
-        phone,
-        `Olá, ${button.dataset.name||'candidato'}! Estamos entrando em contato sobre sua inscrição na guilda FRANÇA.`,
-        window.open('about:blank','_blank')
-      );
-    }
-    return;
-  }else if(action==='rejeitar'){
-    await updateRecord(id,{status:'Rejeitado'});
-  }else if(action==='excluir'||action==='remover'){
-    await deleteRecord(id);
-  }
-  await render();
-});
-
-approvedList.addEventListener('click',async event=>{
-  const button=event.target.closest('button[data-action="remover"]');
-  if(!button)return;
-  await updateRecord(button.dataset.id,{status:'Removido',approved_at:null});
-  await render();
-});
 
 async function updateRecord(id,data){
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${id}`,{
+  const params=new URLSearchParams({id:`eq.${id}`});
+  await authenticatedFetch(`/rest/v1/recruitments?${params}`,{
     method:'PATCH',
     headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`,
       'Content-Type':'application/json',
       Prefer:'return=minimal'
     },
     body:JSON.stringify(data)
   });
-  if(!response.ok)throw new Error(`Erro ao salvar a decisão (${response.status}).`);
 }
 
 async function deleteRecord(id){
-  await fetch(`${SUPABASE_URL}/rest/v1/recruitments?id=eq.${id}`,{
-    method:'DELETE',
-    headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`
-    }
+  const params=new URLSearchParams({id:`eq.${id}`});
+  await authenticatedFetch(`/rest/v1/recruitments?${params}`,{method:'DELETE'});
+}
+
+async function render(){
+  try{
+    records=await getRecords();
+    renderDashboard();
+  }catch(error){
+    showMessage(panelMessage,`Não foi possível carregar o painel: ${error.message}`,'error');
+  }
+}
+
+function renderDashboard(){
+  document.querySelector('#total-count').textContent=String(records.length);
+  document.querySelector('#pending-count').textContent=String(records.filter(item=>item.status==='Pendente').length);
+  document.querySelector('#approved-count').textContent=String(records.filter(item=>item.status==='Aprovado').length);
+  document.querySelector('#rejected-count').textContent=String(records.filter(item=>item.status==='Rejeitado').length);
+
+  const query=searchInput.value.trim().toLocaleLowerCase('pt-BR');
+  const selectedStatus=statusFilter.value;
+  const matches=item=>{
+    const matchesStatus=selectedStatus==='todos'||item.status===selectedStatus;
+    const haystack=[
+      item.nome_completo,
+      item.nick_jogo,
+      item.id_jogo,
+      item.whatsapp,
+      item.funcoes,
+      item.disponibilidade
+    ].join(' ').toLocaleLowerCase('pt-BR');
+    return matchesStatus&&haystack.includes(query);
+  };
+  const candidates=records.filter(item=>item.status!=='Aprovado'&&matches(item));
+  const approved=records.filter(item=>item.status==='Aprovado'&&matches(item));
+
+  list.innerHTML=candidates.length
+    ?candidates.map(item=>renderCandidate(item,false)).join('')
+    :'<p class="empty">Nenhuma inscrição corresponde à busca e aos filtros.</p>';
+  approvedList.innerHTML=approved.length
+    ?approved.map(item=>renderCandidate(item,true)).join('')
+    :'<p class="empty">Nenhum membro aprovado corresponde à busca e aos filtros.</p>';
+}
+
+function renderCandidate(item,isApproved){
+  const id=escapeAttribute(item.id);
+  const status=item.status||'Pendente';
+  const note=noteDrafts.has(String(item.id))?noteDrafts.get(String(item.id)):(item.admin_notes||'');
+  const actions=isApproved
+    ?`<button class="delete" data-action="remover" data-id="${id}">REMOVER MEMBRO</button>`
+    :`<button class="approve" data-action="aprovar" data-id="${id}">APROVAR E CHAMAR</button>
+      <button class="reject" data-action="rejeitar" data-id="${id}">REJEITAR</button>
+      <button class="delete" data-action="excluir" data-id="${id}">EXCLUIR</button>`;
+  return `<article class="candidate">
+    <div class="candidate-top">
+      <h2>${escapeHtml(item.nome_completo||'Sem nome')}</h2>
+      <strong class="candidate-status ${statusClass(status)}">${escapeHtml(status)}</strong>
+    </div>
+    <div class="candidate-grid">
+      <p><strong>Nick:</strong> ${escapeHtml(item.nick_jogo||'-')}</p>
+      <p><strong>ID:</strong> ${escapeHtml(item.id_jogo||'-')}</p>
+      <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp||'-')}</p>
+      <p><strong>Função:</strong> ${escapeHtml(item.funcoes||'-')}</p>
+      <p><strong>Disponibilidade:</strong> ${escapeHtml(item.disponibilidade||'-')}</p>
+      <p><strong>Recebido em:</strong> ${escapeHtml(formatDate(item.created_at))}</p>
+      ${isApproved?`<p><strong>Aprovado em:</strong> ${escapeHtml(formatDate(item.approved_at))}</p>`:''}
+    </div>
+    <label class="note-label" for="note-${id}">Observação interna (visível somente à equipe)</label>
+    <textarea class="note-input" id="note-${id}" data-note-id="${id}" maxlength="1000" placeholder="Ex.: melhor horário para chamar, resultado do teste...">${escapeHtml(note)}</textarea>
+    <div class="candidate-actions">
+      <button class="note-save" data-action="salvar-nota" data-id="${id}">SALVAR OBSERVAÇÃO</button>
+      ${actions}
+    </div>
+    <details class="history-details">
+      <summary>Histórico de decisões</summary>
+      <button class="history-load" data-action="historico" data-id="${id}">CARREGAR HISTÓRICO</button>
+      <ul class="history-list" data-history-for="${id}"><li>Toque em “Carregar histórico” para consultar.</li></ul>
+    </details>
+  </article>`;
+}
+
+function formatDate(value){
+  if(!value)return '—';
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?'—':date.toLocaleString('pt-BR');
+}
+
+function statusClass(value){
+  return `status-${String(value||'pendente').toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+}
+
+function escapeHtml(value){
+  const element=document.createElement('div');
+  element.textContent=String(value);
+  return element.innerHTML;
+}
+
+function escapeAttribute(value){
+  return escapeHtml(value).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function loadHistory(id,container){
+  const params=new URLSearchParams({
+    select:'old_status,new_status,changed_at',
+    recruitment_id:`eq.${id}`,
+    order:'changed_at.desc'
   });
+  const response=await authenticatedFetch(`/rest/v1/recruitment_history?${params}`);
+  const history=await response.json();
+  container.innerHTML=history.length?history.map(entry=>{
+    const message=entry.old_status
+      ?`Status alterado: ${entry.old_status} → ${entry.new_status}`
+      :'Inscrição recebida';
+    return `<li><strong>${escapeHtml(message)}</strong><span>${escapeHtml(formatDate(entry.changed_at))}</span></li>`;
+  }).join(''):'<li>Nenhuma alteração registrada.</li>';
 }
 
 function buildApprovalMessage(candidate){
@@ -228,12 +330,8 @@ function normalizeWhatsAppPhone(value){
   if(input.startsWith('00')){
     phone=phone.slice(2);
   }else if(!input.startsWith('+')){
-    if(phone.startsWith('0')&&(phone.length===11||phone.length===12)){
-      phone=phone.slice(1);
-    }
-    if(phone.length===10||phone.length===11){
-      phone=`55${phone}`;
-    }
+    if(phone.startsWith('0')&&(phone.length===11||phone.length===12))phone=phone.slice(1);
+    if(phone.length===10||phone.length===11)phone=`55${phone}`;
   }
   return phone.length>=10&&phone.length<=15?phone:'';
 }
@@ -247,36 +345,200 @@ function openWhatsapp(phone,message,whatsappWindow){
   window.location.assign(url);
 }
 
-document.querySelector('#export-button').addEventListener('click',async()=>{
-  const records=await getRecords();
-  if(!records.length)return;
-  const fields=['nome_completo','nick_jogo','id_jogo','whatsapp','funcoes','disponibilidade','status','created_at','approved_at'];
-  const rows=[fields.join(';'),...records.map(row=>fields.map(field=>`"${String(row[field]||'').replaceAll('"','""')}"`).join(';'))];
-  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('a');
-  link.href=url;link.download='recrutamentos-franca.csv';link.click();
-  URL.revokeObjectURL(url);
-});
-
-document.querySelector('#clear-button').addEventListener('click',async()=>{
-  if(!confirm('Excluir todos os recrutamentos?'))return;
-  await fetch(`${SUPABASE_URL}/rest/v1/recruitments`,{
-    method:'DELETE',
-    headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`
+async function handlePanelAction(event,container){
+  const button=event.target.closest('button[data-action]');
+  if(!button||button.disabled)return;
+  const id=button.dataset.id;
+  const action=button.dataset.action;
+  button.disabled=true;
+  try{
+    if(action==='historico'){
+      const history=Array.from(container.querySelectorAll('[data-history-for]'))
+        .find(element=>element.dataset.historyFor===id);
+      if(!history)throw new Error('Não foi possível localizar o histórico desta inscrição.');
+      await loadHistory(id,history);
+      return;
     }
-  });
-  await render();
-});
-
-function escapeHtml(value){
-  const element=document.createElement('div');
-  element.textContent=String(value);
-  return element.innerHTML;
+    if(action==='salvar-nota'){
+      const textarea=Array.from(container.querySelectorAll('textarea[data-note-id]'))
+        .find(element=>element.dataset.noteId===id);
+      if(!textarea)throw new Error('Não foi possível localizar a observação desta inscrição.');
+      const note=textarea.value.trim();
+      await updateRecord(id,{admin_notes:note});
+      noteDrafts.delete(String(id));
+      showMessage(panelMessage,'Observação salva com sucesso.','success');
+      await render();
+      return;
+    }
+    if(action==='aprovar'){
+      const whatsappWindow=window.open('about:blank','_blank');
+      try{
+        const candidate=await getRecord(id);
+        await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
+        const phone=normalizeWhatsAppPhone(candidate.whatsapp);
+        if(phone){
+          openWhatsapp(phone,buildApprovalMessage(candidate),whatsappWindow);
+          showMessage(panelMessage,'Candidato aprovado. A mensagem está pronta no WhatsApp.','success');
+        }else{
+          if(whatsappWindow)whatsappWindow.close();
+          showMessage(panelMessage,'Candidato aprovado, mas o WhatsApp cadastrado não é válido.','error');
+        }
+      }catch(error){
+        if(whatsappWindow)whatsappWindow.close();
+        throw error;
+      }
+      await render();
+      return;
+    }
+    const candidate=records.find(item=>String(item.id)===String(id));
+    const name=candidate&&candidate.nome_completo?candidate.nome_completo:'este candidato';
+    if(action==='rejeitar'){
+      if(!confirm(`Deseja marcar ${name} como rejeitado?`))return;
+      await updateRecord(id,{status:'Rejeitado',approved_at:null});
+      showMessage(panelMessage,'Inscrição marcada como rejeitada.','success');
+      await render();
+    }else if(action==='excluir'){
+      if(!confirm(`Excluir permanentemente a inscrição de ${name} e seu histórico?`))return;
+      await deleteRecord(id);
+      noteDrafts.delete(String(id));
+      showMessage(panelMessage,'Inscrição excluída.','success');
+      await render();
+    }else if(action==='remover'){
+      if(!confirm(`Remover ${name} da lista de membros aprovados?`))return;
+      await updateRecord(id,{status:'Removido',approved_at:null});
+      showMessage(panelMessage,'Membro removido da lista de aprovados.','success');
+      await render();
+    }
+  }catch(error){
+    showMessage(panelMessage,`A ação não foi concluída: ${error.message}`,'error');
+  }finally{
+    if(button.isConnected)button.disabled=false;
+  }
 }
 
+loginForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const submitButton=loginForm.querySelector('button[type="submit"]');
+  submitButton.disabled=true;
+  showMessage(loginMessage,'Verificando acesso...','');
+  try{
+    await authenticate(
+      document.querySelector('#admin-email').value.trim(),
+      document.querySelector('#admin-password').value
+    );
+    loginForm.reset();
+    loginBox.classList.add('hidden');
+    panel.classList.remove('hidden');
+    showMessage(loginMessage,'','');
+    await render();
+  }catch(error){
+    showMessage(loginMessage,error.message,'error');
+  }finally{
+    submitButton.disabled=false;
+  }
+});
+
+document.querySelector('#logout-button').addEventListener('click',async()=>{
+  const current=session;
+  clearSession();
+  panel.classList.add('hidden');
+  loginBox.classList.remove('hidden');
+  loginForm.reset();
+  try{
+    if(current&&current.access_token){
+      const response=await fetch(`${SUPABASE_URL}/auth/v1/logout`,{
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${current.access_token}`
+        }
+      });
+      if(!response.ok)throw await responseError(response,'Não foi possível encerrar a sessão no servidor');
+    }
+    showMessage(loginMessage,'Sessão encerrada.','success');
+  }catch(error){
+    showMessage(loginMessage,`Sessão encerrada neste dispositivo, mas o servidor retornou um erro: ${error.message}`,'error');
+  }
+});
+
+list.addEventListener('click',event=>handlePanelAction(event,list));
+approvedList.addEventListener('click',event=>handlePanelAction(event,approvedList));
+list.addEventListener('input',event=>{
+  const textarea=event.target.closest('textarea[data-note-id]');
+  if(textarea)noteDrafts.set(String(textarea.dataset.noteId),textarea.value);
+});
+approvedList.addEventListener('input',event=>{
+  const textarea=event.target.closest('textarea[data-note-id]');
+  if(textarea)noteDrafts.set(String(textarea.dataset.noteId),textarea.value);
+});
+
+searchInput.addEventListener('input',renderDashboard);
+statusFilter.addEventListener('change',renderDashboard);
+
+document.querySelector('#export-button').addEventListener('click',async event=>{
+  const button=event.currentTarget;
+  button.disabled=true;
+  try{
+    const exportedRecords=await getRecords();
+    if(!exportedRecords.length){
+      showMessage(panelMessage,'Não há inscrições para exportar.','');
+      return;
+    }
+    const fields=['nome_completo','nick_jogo','id_jogo','whatsapp','funcoes','disponibilidade','status','created_at','approved_at'];
+    const rows=[fields.join(';'),...exportedRecords.map(row=>fields.map(field=>`"${String(row[field]||'').replace(/"/g,'""')}"`).join(';'))];
+    const blob=new Blob(['\uFEFF',rows.join('\r\n')],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='recrutamentos-franca.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    showMessage(panelMessage,'Arquivo CSV exportado.','success');
+  }catch(error){
+    showMessage(panelMessage,`Não foi possível exportar: ${error.message}`,'error');
+  }finally{
+    button.disabled=false;
+  }
+});
+
+document.querySelector('#clear-button').addEventListener('click',async event=>{
+  if(!records.length){
+    showMessage(panelMessage,'Não há inscrições para excluir.','');
+    return;
+  }
+  if(!confirm(`Isso excluirá permanentemente ${records.length} inscrição(ões) e todo o histórico. Deseja continuar?`))return;
+  const button=event.currentTarget;
+  button.disabled=true;
+  try{
+    await authenticatedFetch('/rest/v1/recruitments?id=not.is.null',{method:'DELETE'});
+    noteDrafts.clear();
+    showMessage(panelMessage,'Todas as inscrições foram excluídas.','success');
+    await render();
+  }catch(error){
+    showMessage(panelMessage,`Não foi possível limpar as inscrições: ${error.message}`,'error');
+  }finally{
+    button.disabled=false;
+  }
+});
+
+document.querySelector('#refresh-button').addEventListener('click',render);
+
+async function initialize(){
+  if(!session)return;
+  loginBox.classList.add('hidden');
+  panel.classList.remove('hidden');
+  try{
+    await verifyAdmin();
+    await render();
+  }catch(error){
+    clearSession();
+    panel.classList.add('hidden');
+    loginBox.classList.remove('hidden');
+    showMessage(loginMessage,`Não foi possível validar sua sessão: ${error.message}`,'error');
+  }
+}
+
+initialize();
 setInterval(()=>{
-  if(!panel.classList.contains('hidden'))render();
-},5000);
+  if(!panel.classList.contains('hidden')&&!document.querySelector('#panel details[open]'))render();
+},15000);

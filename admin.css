@@ -1,0 +1,84 @@
+.admin-body{min-height:100vh;background:#020612;color:#f5f7ff}
+.admin-page{width:min(1120px,100%);margin:0 auto;padding:24px}
+.hidden{display:none!important}
+.login-box{width:min(420px,100%);margin:8vh auto 0;padding:28px;background:#10182b;border:1px solid #263553;border-radius:14px;box-shadow:0 16px 48px #0007}
+.admin-kicker{margin:0 0 8px;color:#ed1c35;font-size:12px;font-weight:900;letter-spacing:3px}
+.login-box h1,.admin-head h1{margin:0;font-size:25px}
+.login-description{color:#bfc8d9;line-height:1.5}
+#login-form{display:grid;gap:8px;margin-top:22px}
+#login-form label,.note-label{color:#cbd5e7;font-size:13px;font-weight:700}
+#login-form input,.search-control input,.status-control select,.note-input{width:100%;min-height:46px;padding:10px 12px;border:1px solid #344463;border-radius:8px;background:#080f20;color:#fff;font:inherit}
+#login-form input:focus,.search-control input:focus,.status-control select:focus,.note-input:focus{outline:2px solid #0872f8;outline-offset:1px}
+#login-form button,.admin-actions button,.section-heading button,.candidate-actions button,.history-load{min-height:44px;padding:10px 13px;border:0;border-radius:8px;color:#fff;font-weight:800;cursor:pointer}
+#login-form button{margin-top:8px;background:linear-gradient(100deg,#0872f8,#ed1c35)}
+button:disabled{opacity:.55;cursor:wait!important}
+.notice{min-height:18px;margin:12px 0;color:#bdc8da;font-size:14px;line-height:1.45}
+.notice:empty{display:none}
+.notice.error{color:#ff8793}
+.notice.success{color:#71e5a5}
+.admin-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.admin-head h1{font-size:clamp(22px,4vw,30px)}
+.admin-actions{display:flex;flex-wrap:wrap;gap:8px}
+.admin-actions button{background:#263653}
+.admin-actions .admin-export{background:#0872f8}
+.admin-actions .admin-logout{background:#4b5568}
+.admin-actions .admin-secondary{background:#263653}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.stat-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;background:#10182b;border:1px solid #263553;border-radius:10px}
+.stat-card span{color:#bfc8d9;font-size:12px;font-weight:800;letter-spacing:1px}
+.stat-card strong{font-size:28px;color:#fff}
+.stat-card:nth-child(2) strong{color:#ffd166}
+.stat-card:nth-child(3) strong{color:#45d68a}
+.stat-card:nth-child(4) strong{color:#ff7583}
+.filter-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.35fr);gap:12px;padding:14px;margin:20px 0;background:#0a1224;border:1px solid #263553;border-radius:10px}
+.search-control,.status-control{display:grid;gap:6px;color:#cbd5e7;font-size:12px;font-weight:700}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 12px}
+.section-heading h2{margin:0;font-size:17px;letter-spacing:1px}
+.section-heading .admin-clear{background:#a91d32}
+.candidate-list{display:grid;gap:12px}
+.candidate{min-width:0;padding:16px;background:#10182b;border:1px solid #263553;border-radius:10px}
+.candidate-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.candidate h2{margin:0;font-size:18px;overflow-wrap:anywhere}
+.candidate-status{flex-shrink:0;color:#ffd166;font-size:12px}
+.candidate-status.status-aprovado{color:#45d68a}
+.candidate-status.status-rejeitado{color:#ff7583}
+.candidate-status.status-removido{color:#aeb8ca}
+.candidate-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 14px;margin:14px 0}
+.candidate-grid p{margin:0;color:#c0c8d8;font-size:13px;overflow-wrap:anywhere}
+.note-label{display:block;margin:14px 0 6px}
+.note-input{min-height:72px;resize:vertical;font-size:14px}
+.candidate-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.candidate-actions .approve{background:#0872f8}
+.candidate-actions .reject{background:#d52a3f}
+.candidate-actions .delete{background:#4b5568}
+.candidate-actions .note-save{background:#30553f}
+.history-details{margin-top:14px;padding-top:12px;border-top:1px solid #263553;color:#dfe6f2}
+.history-details summary{cursor:pointer;font-size:13px;font-weight:800}
+.history-load{margin-top:10px;background:#263653}
+.history-list{display:grid;gap:8px;padding-left:20px;color:#c0c8d8;font-size:13px}
+.history-list li span{display:block;margin-top:2px;color:#8f9db3;font-size:12px}
+.empty{margin:0;padding:28px 16px;text-align:center;color:#9da7ba;background:#0a1224;border:1px dashed #344463;border-radius:10px}
+.approved-section{margin-top:34px;padding-top:18px;border-top:1px solid #263553}
+@media(max-width:720px){
+  .admin-page{padding:16px}
+  .admin-head{align-items:flex-start;flex-direction:column}
+  .admin-actions{width:100%}
+  .admin-actions button{flex:1}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .filter-panel{grid-template-columns:1fr}
+  .candidate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  .admin-page{padding:12px}
+  .login-box{margin-top:5vh;padding:22px}
+  .stats-grid{gap:8px}
+  .stat-card{align-items:flex-start;flex-direction:column;gap:4px;padding:12px}
+  .stat-card strong{font-size:24px}
+  .candidate{padding:13px}
+  .candidate-top{flex-direction:column;gap:6px}
+  .candidate-grid{grid-template-columns:1fr;gap:8px}
+  .candidate-actions{display:grid;grid-template-columns:1fr}
+  .candidate-actions button{width:100%}
+  .section-heading{align-items:flex-start;flex-direction:column}
+  .section-heading .admin-clear{width:100%}
+}

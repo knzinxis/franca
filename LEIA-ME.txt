@@ -1,14 +1,41 @@
-FRANÇA KN 00 — SITE
+FRANÇA KN 00 — SITE E PAINEL
 
-Abra o arquivo index.html em um navegador para visualizar o site.
-A imagem enviada como referência está em assets/referencia-original.jpeg e foi copiada sem alterações.
+ARQUIVOS
+- index.html: página pública e formulário de recrutamento.
+- admin.html: painel privado de recrutamento.
+- admin.js e admin.css: autenticação e funções do painel.
+- supabase-admin-security.sql: tabelas, histórico e políticas de acesso do Supabase.
 
-Esta é uma primeira versão estática e responsiva:
-- visual inspirado na referência enviada;
-- formulário com validação no navegador;
-- menu e janela de Painel ADM demonstrativos.
+CONFIGURAÇÃO OBRIGATÓRIA DO PAINEL
+1. Abra o SQL Editor do projeto Supabase e execute todo o arquivo
+   supabase-admin-security.sql.
+2. No Supabase, crie a conta do administrador em Authentication > Users.
+3. Copie o UUID desse usuário e cadastre a permissão executando:
 
-IMPORTANTE:
-O formulário ainda não envia os dados para a guilda nem guarda candidaturas em um servidor.
-O painel ADM ainda não possui login real. Para publicar com recebimento de inscrições,
-aprovação/reprovação e acesso privado, é necessário configurar hospedagem e backend seguro.
+   insert into public.admin_users (user_id)
+   values ('UUID-DO-USUARIO');
+
+4. Abra admin.html e entre com o e-mail e a senha dessa conta.
+
+O painel usa Supabase Auth e as políticas RLS do banco. Não coloque uma chave
+service_role nem senhas administrativas nos arquivos do site. A chave
+publishable usada pelo formulário é pública; a proteção dos dados é aplicada
+pelas políticas RLS.
+
+O script SQL permite inscrições públicas com status Pendente e restringe leitura,
+alteração, exclusão, observações internas e histórico a usuários autorizados.
+O histórico registra o recebimento e as mudanças de status. As observações são
+privadas e não são incluídas no CSV exportado.
+
+FUNÇÕES DO PAINEL
+- Busca por nome, nick, ID e WhatsApp; filtro por status.
+- Contadores de inscrições e atualização manual/automática.
+- Aprovação com mensagem completa pronta no WhatsApp.
+- Confirmação antes de rejeitar, remover ou excluir inscrições.
+- Exportação CSV com erros informados na tela.
+- Observações internas e histórico das decisões.
+- Layout responsivo para celular e computador.
+
+Antes de publicar as mudanças, execute o SQL e teste uma inscrição e o acesso de
+uma conta administradora. Sem a configuração do Supabase, o login do painel não
+funcionará e o formulário público poderá ser recusado pelas políticas do banco.
