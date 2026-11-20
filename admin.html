@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#030817">
   <title>Painel administrativo | Guilda França</title>
   <link rel="stylesheet" href="style.css?v=20261119g">
-  <link rel="stylesheet" href="admin.css?v=20261119a">
+  <link rel="stylesheet" href="admin.css?v=20261119b">
 </head>
 <body class="admin-body">
   <main class="admin-page">
@@ -21,7 +21,23 @@
         <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
         <button type="submit">ENTRAR</button>
       </form>
+      <button class="forgot-password" id="forgot-password-button" type="button">ESQUECI MINHA SENHA</button>
       <p class="notice" id="login-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="login-box hidden" id="password-reset-box" aria-labelledby="password-reset-title">
+      <p class="admin-kicker">REDEFINIÇÃO DE SENHA</p>
+      <h1 id="password-reset-title">Criar nova senha</h1>
+      <p class="login-description">Digite uma nova senha para sua conta administrativa.</p>
+      <form id="password-reset-form" autocomplete="on">
+        <label for="new-admin-password">Nova senha</label>
+        <input id="new-admin-password" name="password" type="password" autocomplete="new-password" minlength="6" required>
+        <label for="confirm-admin-password">Confirmar nova senha</label>
+        <input id="confirm-admin-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required>
+        <button type="submit">SALVAR NOVA SENHA</button>
+      </form>
+      <button class="forgot-password" id="cancel-password-reset" type="button">VOLTAR AO LOGIN</button>
+      <p class="notice" id="password-reset-message" role="status" aria-live="polite"></p>
     </section>
 
     <section id="panel" class="hidden" aria-labelledby="panel-title">
@@ -79,6 +95,6 @@
       </section>
     </section>
   </main>
-  <script src="admin.js?v=20261119m"></script>
+  <script src="admin.js?v=20261119n"></script>
 </body>
 </html>

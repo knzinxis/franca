@@ -5,6 +5,9 @@ const SESSION_STORAGE_KEY='franca-admin-session';
 const loginBox=document.querySelector('#login-box');
 const loginForm=document.querySelector('#login-form');
 const loginMessage=document.querySelector('#login-message');
+const passwordResetBox=document.querySelector('#password-reset-box');
+const passwordResetForm=document.querySelector('#password-reset-form');
+const passwordResetMessage=document.querySelector('#password-reset-message');
 const panel=document.querySelector('#panel');
 const panelMessage=document.querySelector('#panel-message');
 const list=document.querySelector('#candidate-list');
@@ -76,6 +79,29 @@ async function authenticate(email,password){
     clearSession();
     throw error;
   }
+}
+
+async function requestPasswordReset(email){
+  const response=await fetch(`${SUPABASE_URL}/auth/v1/recover`,{
+    method:'POST',
+    headers:{
+      apikey:SUPABASE_KEY,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      email,
+      redirect_to:'https://knzinxis.github.io/franca/admin.html'
+    })
+  });
+  if(!response.ok)throw await responseError(response,'Não foi possível enviar o e-mail de recuperação');
+}
+
+function getPasswordRecoveryToken(){
+  const params=new URLSearchParams(window.location.hash.replace(/^#/,''));
+  if(params.get('type')==='recovery'&&params.get('access_token')){
+    return params.get('access_token');
+  }
+  return null;
 }
 
 async function refreshSession(){
@@ -438,6 +464,72 @@ loginForm.addEventListener('submit',async event=>{
   }
 });
 
+document.querySelector('#forgot-password-button').addEventListener('click',async()=>{
+  const email=document.querySelector('#admin-email').value.trim();
+  if(!email){
+    showMessage(loginMessage,'Digite seu e-mail administrativo primeiro.','error');
+    document.querySelector('#admin-email').focus();
+    return;
+  }
+  const button=document.querySelector('#forgot-password-button');
+  button.disabled=true;
+  showMessage(loginMessage,'Enviando e-mail de recuperação...','');
+  try{
+    await requestPasswordReset(email);
+    showMessage(loginMessage,'E-mail de recuperação enviado. Confira sua caixa de entrada e o Spam.','success');
+  }catch(error){
+    showMessage(loginMessage,error.message,'error');
+  }finally{
+    button.disabled=false;
+  }
+});
+
+passwordResetForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const password=document.querySelector('#new-admin-password').value;
+  const confirmation=document.querySelector('#confirm-admin-password').value;
+  if(password!==confirmation){
+    showMessage(passwordResetMessage,'As duas senhas não coincidem.','error');
+    return;
+  }
+  const recoveryToken=getPasswordRecoveryToken();
+  if(!recoveryToken){
+    showMessage(passwordResetMessage,'O link de redefinição expirou ou é inválido. Solicite outro e-mail.','error');
+    return;
+  }
+  const button=passwordResetForm.querySelector('button[type="submit"]');
+  button.disabled=true;
+  showMessage(passwordResetMessage,'Salvando nova senha...','');
+  try{
+    const response=await fetch(`${SUPABASE_URL}/auth/v1/user`,{
+      method:'PUT',
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:`Bearer ${recoveryToken}`,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({password})
+    });
+    if(!response.ok)throw await responseError(response,'Não foi possível alterar a senha');
+    passwordResetForm.reset();
+    window.history.replaceState({},document.title,window.location.pathname);
+    passwordResetBox.classList.add('hidden');
+    loginBox.classList.remove('hidden');
+    showMessage(loginMessage,'Senha alterada com sucesso. Entre com sua nova senha.','success');
+  }catch(error){
+    showMessage(passwordResetMessage,error.message,'error');
+  }finally{
+    button.disabled=false;
+  }
+});
+
+document.querySelector('#cancel-password-reset').addEventListener('click',()=>{
+  window.history.replaceState({},document.title,window.location.pathname);
+  passwordResetBox.classList.add('hidden');
+  loginBox.classList.remove('hidden');
+  showMessage(loginMessage,'','');
+});
+
 document.querySelector('#logout-button').addEventListener('click',async()=>{
   const current=session;
   clearSession();
@@ -524,6 +616,12 @@ document.querySelector('#clear-button').addEventListener('click',async event=>{
 document.querySelector('#refresh-button').addEventListener('click',render);
 
 async function initialize(){
+  if(getPasswordRecoveryToken()){
+    loginBox.classList.add('hidden');
+    passwordResetBox.classList.remove('hidden');
+    showMessage(passwordResetMessage,'Defina sua nova senha para continuar.','');
+    return;
+  }
   if(!session)return;
   loginBox.classList.add('hidden');
   panel.classList.remove('hidden');

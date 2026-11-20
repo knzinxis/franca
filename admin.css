@@ -11,6 +11,11 @@
 #login-form input:focus,.search-control input:focus,.status-control select:focus,.note-input:focus{outline:2px solid #0872f8;outline-offset:1px}
 #login-form button,.admin-actions button,.section-heading button,.candidate-actions button,.history-load{min-height:44px;padding:10px 13px;border:0;border-radius:8px;color:#fff;font-weight:800;cursor:pointer}
 #login-form button{margin-top:8px;background:linear-gradient(100deg,#0872f8,#ed1c35)}
+.forgot-password{width:100%;margin-top:12px;padding:8px;border:0;background:transparent;color:#8fbaff;font-size:13px;font-weight:800;text-align:center;cursor:pointer}
+#password-reset-form{display:grid;gap:8px;margin-top:22px}
+#password-reset-form label{color:#cbd5e7;font-size:13px;font-weight:700}
+#password-reset-form input{width:100%;min-height:46px;padding:10px 12px;border:1px solid #344463;border-radius:8px;background:#080f20;color:#fff;font:inherit}
+#password-reset-form button{margin-top:8px;min-height:44px;border:0;border-radius:8px;background:linear-gradient(100deg,#0872f8,#ed1c35);color:#fff;font-weight:800}
 button:disabled{opacity:.55;cursor:wait!important}
 .notice{min-height:18px;margin:12px 0;color:#bdc8da;font-size:14px;line-height:1.45}
 .notice:empty{display:none}
