@@ -35,6 +35,9 @@ O histórico registra o recebimento e as mudanças de status. As observações s
 privadas e não são incluídas no CSV exportado.
 
 FUNÇÕES DO PAINEL
+- Interface reformulada no visual profissional da guilda.
+- Login administrativo em tela dedicada com identidade visual.
+- Navegação lateral no computador e topo compacto no celular.
 - Busca por nome, idade, nick, ID e WhatsApp; filtros por status e faixa etária.
 - Ordenação por data de inscrição e idade.
 - Contadores de inscrições e atualização manual/automática.
