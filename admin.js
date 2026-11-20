@@ -82,16 +82,14 @@ async function authenticate(email,password){
 }
 
 async function requestPasswordReset(email){
-  const response=await fetch(`${SUPABASE_URL}/auth/v1/recover`,{
+  const redirectTo=new URL('https://knzinxis.github.io/franca/admin.html');
+  const response=await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo.href)}`,{
     method:'POST',
     headers:{
       apikey:SUPABASE_KEY,
       'Content-Type':'application/json'
     },
-    body:JSON.stringify({
-      email,
-      redirect_to:'https://knzinxis.github.io/franca/admin.html'
-    })
+    body:JSON.stringify({email})
   });
   if(!response.ok)throw await responseError(response,'Não foi possível enviar o e-mail de recuperação');
 }
