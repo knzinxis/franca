@@ -2,9 +2,17 @@ const SUPABASE_URL='https://eynwuwakthzpbxxzvifl.supabase.co';
 const SUPABASE_KEY='sb_publishable_d8wfzUDD2mBv_obeWJmDnQ_QBWD-FSL';
 
 const drawer=document.getElementById('drawer');
-document.getElementById('menuBtn').addEventListener('click',()=>drawer.classList.toggle('open'));
-document.getElementById('closeMenu').addEventListener('click',()=>drawer.classList.remove('open'));
-drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>drawer.classList.remove('open')));
+const menuButton=document.getElementById('menuBtn');
+const closeDrawer=()=>{
+  drawer.classList.remove('open');
+  menuButton.setAttribute('aria-expanded','false');
+};
+menuButton.addEventListener('click',()=>{
+  const isOpen=drawer.classList.toggle('open');
+  menuButton.setAttribute('aria-expanded',String(isOpen));
+});
+document.getElementById('closeMenu').addEventListener('click',closeDrawer);
+drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
 
 const form=document.getElementById('applicationForm');
 form.addEventListener('submit',async e=>{

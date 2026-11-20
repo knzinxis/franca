@@ -1,7 +1,9 @@
 FRANÇA KN 00 — SITE E PAINEL
 
 ARQUIVOS
-- index.html: página pública e formulário de recrutamento.
+- index.html e site.css: site público responsivo da guilda.
+- assets/hero-character.jpg e assets/banner-franca-novo.jpg: imagens web otimizadas.
+- script-confirmacao.js: formulário público conectado ao Supabase.
 - admin.html: painel privado de recrutamento.
 - admin.js e admin.css: autenticação e funções do painel.
 - supabase-admin-security.sql: tabelas, histórico e políticas de acesso do Supabase.
@@ -41,6 +43,12 @@ FUNÇÕES DO PAINEL
 - Exportação CSV com erros informados na tela.
 - Observações internas e histórico das decisões.
 - Layout responsivo para celular e computador.
+
+SITE PÚBLICO
+- Estatísticas aguardam confirmação da liderança; não são estimadas.
+- Convite do Discord e links oficiais de YouTube e Instagram ainda precisam
+  ser informados para ativar os respectivos botões.
+- O botão do WhatsApp usa o link de convite da guilda já configurado.
 
 Antes de publicar as mudanças, execute o SQL e teste uma inscrição e o acesso de
 uma conta administradora. Sem a configuração do Supabase, o login do painel não
