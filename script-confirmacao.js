@@ -20,6 +20,7 @@ form.addEventListener('submit',async e=>{
   submitButton.disabled=true;
   const recruit={
     nome_completo:fields.nomeCompleto,
+    idade:Number(fields.idade),
     nick_jogo:fields.nickJogo,
     id_jogo:fields.idJogo,
     whatsapp:fields.whatsapp,

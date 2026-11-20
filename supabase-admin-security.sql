@@ -4,6 +4,9 @@
 ALTER TABLE public.recruitments
   ADD COLUMN IF NOT EXISTS admin_notes text NOT NULL DEFAULT '';
 
+ALTER TABLE public.recruitments
+  ADD COLUMN IF NOT EXISTS idade integer CHECK (idade BETWEEN 1 AND 120);
+
 CREATE TABLE IF NOT EXISTS public.admin_users (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now()
@@ -51,6 +54,7 @@ REVOKE ALL ON TABLE public.recruitment_history FROM PUBLIC, anon, authenticated;
 
 GRANT INSERT (
   nome_completo,
+  idade,
   nick_jogo,
   id_jogo,
   whatsapp,

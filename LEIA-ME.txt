@@ -5,6 +5,7 @@ ARQUIVOS
 - admin.html: painel privado de recrutamento.
 - admin.js e admin.css: autenticação e funções do painel.
 - supabase-admin-security.sql: tabelas, histórico e políticas de acesso do Supabase.
+- supabase-add-age.sql: adiciona o campo idade e libera a inserção pública desse campo.
 
 CONFIGURAÇÃO OBRIGATÓRIA DO PAINEL
 1. Abra o SQL Editor do projeto Supabase e execute todo o arquivo
@@ -17,6 +18,10 @@ CONFIGURAÇÃO OBRIGATÓRIA DO PAINEL
 
 4. Abra admin.html e entre com o e-mail e a senha dessa conta.
 
+ATUALIZAÇÃO DO CAMPO IDADE
+Para atualizar um banco já configurado, execute supabase-add-age.sql no SQL Editor
+do Supabase antes de publicar/usar o formulário atualizado.
+
 O painel usa Supabase Auth e as políticas RLS do banco. Não coloque uma chave
 service_role nem senhas administrativas nos arquivos do site. A chave
 publishable usada pelo formulário é pública; a proteção dos dados é aplicada
@@ -28,7 +33,7 @@ O histórico registra o recebimento e as mudanças de status. As observações s
 privadas e não são incluídas no CSV exportado.
 
 FUNÇÕES DO PAINEL
-- Busca por nome, nick, ID e WhatsApp; filtro por status.
+- Busca por nome, idade, nick, ID e WhatsApp; filtro por status.
 - Contadores de inscrições e atualização manual/automática.
 - Aprovação com mensagem completa pronta no WhatsApp.
 - Confirmação antes de rejeitar, remover ou excluir inscrições.

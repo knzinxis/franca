@@ -207,6 +207,7 @@ function renderDashboard(){
     const matchesStatus=selectedStatus==='todos'||item.status===selectedStatus;
     const haystack=[
       item.nome_completo,
+      item.idade,
       item.nick_jogo,
       item.id_jogo,
       item.whatsapp,
@@ -242,6 +243,7 @@ function renderCandidate(item,isApproved){
     </div>
     <div class="candidate-grid">
       <p><strong>Nick:</strong> ${escapeHtml(item.nick_jogo||'-')}</p>
+      <p><strong>Idade:</strong> ${item.idade?`${escapeHtml(item.idade)} anos`:'-'}</p>
       <p><strong>ID:</strong> ${escapeHtml(item.id_jogo||'-')}</p>
       <p><strong>WhatsApp:</strong> ${escapeHtml(item.whatsapp||'-')}</p>
       <p><strong>Função:</strong> ${escapeHtml(item.funcoes||'-')}</p>
@@ -341,6 +343,7 @@ Seja bem-vindo à família FRANÇA! Vamos pra cima! 🇫🇷
 DADOS DO CANDIDATO
 
 👤 Nome completo: ${candidate.nome_completo||'Não informado'}
+🎂 Idade: ${candidate.idade?`${candidate.idade} anos`:'Não informada'}
 🆔 ID: ${candidate.id_jogo||'Não informado'}
 🎮 Nick do jogo: ${candidate.nick_jogo||'Não informado'}
 📱 Número do WhatsApp: ${candidate.whatsapp||'Não informado'}
@@ -574,7 +577,7 @@ document.querySelector('#export-button').addEventListener('click',async event=>{
       showMessage(panelMessage,'Não há inscrições para exportar.','');
       return;
     }
-    const fields=['nome_completo','nick_jogo','id_jogo','whatsapp','funcoes','disponibilidade','status','created_at','approved_at'];
+    const fields=['nome_completo','idade','nick_jogo','id_jogo','whatsapp','funcoes','disponibilidade','status','created_at','approved_at'];
     const rows=[fields.join(';'),...exportedRecords.map(row=>fields.map(field=>`"${String(row[field]||'').replace(/"/g,'""')}"`).join(';'))];
     const blob=new Blob(['\uFEFF',rows.join('\r\n')],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
