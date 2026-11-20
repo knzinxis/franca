@@ -12,6 +12,7 @@ const panel=document.querySelector('#panel');
 const panelMessage=document.querySelector('#panel-message');
 const list=document.querySelector('#candidate-list');
 const approvedList=document.querySelector('#approved-list');
+const rejectedList=document.querySelector('#rejected-list');
 const searchInput=document.querySelector('#candidate-search');
 const statusFilter=document.querySelector('#status-filter');
 const ageFilter=document.querySelector('#age-filter');
@@ -243,7 +244,8 @@ function renderDashboard(){
     }
     return sortBy==='oldest'?firstDate-secondDate:secondDate-firstDate;
   };
-  const candidates=records.filter(item=>item.status!=='Aprovado'&&matches(item)).sort(compare);
+  const candidates=records.filter(item=>item.status==='Pendente'&&matches(item)).sort(compare);
+  const rejected=records.filter(item=>item.status==='Rejeitado'&&matches(item)).sort(compare);
   const approved=records.filter(item=>item.status==='Aprovado'&&matches(item)).sort(compare);
 
   list.innerHTML=candidates.length
@@ -251,7 +253,10 @@ function renderDashboard(){
     :'<p class="empty">Nenhuma inscrição corresponde à busca e aos filtros.</p>';
   approvedList.innerHTML=approved.length
     ?approved.map(item=>renderCandidate(item,true)).join('')
-    :'<p class="empty">Nenhum membro aprovado corresponde à busca e aos filtros.</p>';
+    :'<p class="empty">Nenhum recrutamento aprovado corresponde à busca e aos filtros.</p>';
+  rejectedList.innerHTML=rejected.length
+    ?rejected.map(item=>renderCandidate(item,false)).join('')
+    :'<p class="empty">Nenhum recrutamento reprovado corresponde à busca e aos filtros.</p>';
 }
 
 function renderCandidate(item,isApproved){
@@ -583,11 +588,16 @@ document.querySelector('#logout-button').addEventListener('click',async()=>{
 
 list.addEventListener('click',event=>handlePanelAction(event,list));
 approvedList.addEventListener('click',event=>handlePanelAction(event,approvedList));
+rejectedList.addEventListener('click',event=>handlePanelAction(event,rejectedList));
 list.addEventListener('input',event=>{
   const textarea=event.target.closest('textarea[data-note-id]');
   if(textarea)noteDrafts.set(String(textarea.dataset.noteId),textarea.value);
 });
 approvedList.addEventListener('input',event=>{
+  const textarea=event.target.closest('textarea[data-note-id]');
+  if(textarea)noteDrafts.set(String(textarea.dataset.noteId),textarea.value);
+});
+rejectedList.addEventListener('input',event=>{
   const textarea=event.target.closest('textarea[data-note-id]');
   if(textarea)noteDrafts.set(String(textarea.dataset.noteId),textarea.value);
 });
@@ -624,17 +634,18 @@ document.querySelector('#export-button').addEventListener('click',async event=>{
 });
 
 document.querySelector('#clear-button').addEventListener('click',async event=>{
-  if(!records.length){
-    showMessage(panelMessage,'Não há inscrições para excluir.','');
+  const pendingCount=records.filter(item=>item.status==='Pendente').length;
+  if(!pendingCount){
+    showMessage(panelMessage,'Não há recrutamentos pendentes para excluir.','');
     return;
   }
-  if(!confirm(`Isso excluirá permanentemente ${records.length} inscrição(ões) e todo o histórico. Deseja continuar?`))return;
+  if(!confirm(`Isso excluirá permanentemente ${pendingCount} recrutamento(s) pendente(s) e todo o histórico relacionado. Os aprovados não serão afetados. Deseja continuar?`))return;
   const button=event.currentTarget;
   button.disabled=true;
   try{
-    await authenticatedFetch('/rest/v1/recruitments?id=not.is.null',{method:'DELETE'});
+    await authenticatedFetch('/rest/v1/recruitments?status=eq.Pendente',{method:'DELETE'});
     noteDrafts.clear();
-    showMessage(panelMessage,'Todas as inscrições foram excluídas.','success');
+    showMessage(panelMessage,'Os recrutamentos pendentes foram excluídos. Os aprovados foram preservados.','success');
     await render();
   }catch(error){
     showMessage(panelMessage,`Não foi possível limpar as inscrições: ${error.message}`,'error');

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#05070c">
   <title>Painel administrativo | Guilda França</title>
-  <link rel="stylesheet" href="admin.css?v=20261120j">
+  <link rel="stylesheet" href="admin.css?v=20261120k">
 </head>
 <body class="admin-body">
   <main class="admin-shell">
@@ -71,8 +71,9 @@
         </a>
         <nav class="dashboard-nav" aria-label="Navegação do painel">
           <a class="active" href="#panel"><span aria-hidden="true">▦</span>Visão geral</a>
-          <a href="#applications-title"><span aria-hidden="true">♙</span>Recrutamento</a>
-          <a href="#approved-title"><span aria-hidden="true">♛</span>Aprovados</a>
+          <a href="#applications-title"><span aria-hidden="true">♙</span>Pendentes</a>
+          <a href="#rejected-title"><span aria-hidden="true">×</span>Reprovados</a>
+          <a href="#approved-title"><span aria-hidden="true">♛</span>Recrutamentos aprovados</a>
         </nav>
         <button class="sidebar-logout" id="logout-button" type="button"><span aria-hidden="true">↗</span> Encerrar sessão</button>
       </aside>
@@ -150,16 +151,26 @@
               <p>FILA DE RECRUTAMENTO</p>
               <h2 id="applications-title">Inscrições para analisar</h2>
             </div>
-            <button class="admin-clear" id="clear-button" type="button">Excluir todas</button>
+            <button class="admin-clear" id="clear-button" type="button">Excluir pendentes</button>
           </div>
           <div class="candidate-list" id="candidate-list"></div>
+        </section>
+
+        <section class="candidate-section rejected-section" aria-labelledby="rejected-title">
+          <div class="section-heading">
+            <div>
+              <p>FORA DA FILA</p>
+              <h2 id="rejected-title">Recrutamentos reprovados</h2>
+            </div>
+          </div>
+          <div class="candidate-list" id="rejected-list"></div>
         </section>
 
         <section class="candidate-section approved-section" aria-labelledby="approved-title">
           <div class="section-heading">
             <div>
               <p>ELENCO ATIVO</p>
-              <h2 id="approved-title">Membros aprovados</h2>
+              <h2 id="approved-title">Recrutamentos aprovados</h2>
             </div>
           </div>
           <div class="candidate-list" id="approved-list"></div>
@@ -167,6 +178,6 @@
       </div>
     </section>
   </main>
-  <script src="admin.js?v=20261120j"></script>
+  <script src="admin.js?v=20261120k"></script>
 </body>
 </html>

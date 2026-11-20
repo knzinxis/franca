@@ -36,6 +36,10 @@ privadas e não são incluídas no CSV exportado.
 
 FUNÇÕES DO PAINEL
 - Interface reformulada no visual profissional da guilda.
+- Recrutamentos aprovados ficam exclusivos na seção "Recrutamentos aprovados".
+- Pendentes e reprovados são exibidos em seções separadas.
+- Ao aprovar, o candidato sai automaticamente da fila pendente.
+- O botão "Excluir pendentes" preserva aprovações e exclui apenas pendências.
 - Login administrativo em tela dedicada com identidade visual.
 - Navegação lateral no computador e topo compacto no celular.
 - Busca por nome, idade, nick, ID e WhatsApp; filtros por status e faixa etária.
