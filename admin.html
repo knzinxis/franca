@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#030817">
   <title>Painel administrativo | Guilda França</title>
-  <link rel="stylesheet" href="style.css?v=20261119g">
-  <link rel="stylesheet" href="admin.css?v=20261119b">
+  <link rel="stylesheet" href="style.css?v=20261120c">
+  <link rel="stylesheet" href="admin.css?v=20261120c">
 </head>
 <body class="admin-body">
   <main class="admin-page">
@@ -77,6 +77,23 @@
             <option value="Removido">Removidos</option>
           </select>
         </label>
+        <label class="age-control" for="age-filter">
+          <span>Faixa etária</span>
+          <select id="age-filter">
+            <option value="all">Todas as idades</option>
+            <option value="under18">Menores de 18</option>
+            <option value="adult">18 anos ou mais</option>
+          </select>
+        </label>
+        <label class="sort-control" for="sort-filter">
+          <span>Ordenar por</span>
+          <select id="sort-filter">
+            <option value="newest">Mais recentes</option>
+            <option value="oldest">Mais antigas</option>
+            <option value="age-asc">Menor idade</option>
+            <option value="age-desc">Maior idade</option>
+          </select>
+        </label>
       </section>
 
       <section aria-labelledby="applications-title">
@@ -95,6 +112,6 @@
       </section>
     </section>
   </main>
-  <script src="admin.js?v=20261120b"></script>
+  <script src="admin.js?v=20261120c"></script>
 </body>
 </html>

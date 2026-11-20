@@ -14,6 +14,8 @@ const list=document.querySelector('#candidate-list');
 const approvedList=document.querySelector('#approved-list');
 const searchInput=document.querySelector('#candidate-search');
 const statusFilter=document.querySelector('#status-filter');
+const ageFilter=document.querySelector('#age-filter');
+const sortFilter=document.querySelector('#sort-filter');
 const noteDrafts=new Map();
 let session=loadSession();
 let records=[];
@@ -203,8 +205,19 @@ function renderDashboard(){
 
   const query=searchInput.value.trim().toLocaleLowerCase('pt-BR');
   const selectedStatus=statusFilter.value;
+  const selectedAgeRange=ageFilter.value;
+  const sortBy=sortFilter.value;
+  const readAge=item=>{
+    const age=Number(item.idade);
+    return Number.isInteger(age)&&age>=1&&age<=120?age:null;
+  };
   const matches=item=>{
     const matchesStatus=selectedStatus==='todos'||item.status===selectedStatus;
+    const age=readAge(item);
+    const hasAge=age!==null;
+    const matchesAge=selectedAgeRange==='all'
+      ||(selectedAgeRange==='under18'&&hasAge&&age<18)
+      ||(selectedAgeRange==='adult'&&hasAge&&age>=18);
     const haystack=[
       item.nome_completo,
       item.idade,
@@ -214,10 +227,24 @@ function renderDashboard(){
       item.funcoes,
       item.disponibilidade
     ].join(' ').toLocaleLowerCase('pt-BR');
-    return matchesStatus&&haystack.includes(query);
+    return matchesStatus&&matchesAge&&haystack.includes(query);
   };
-  const candidates=records.filter(item=>item.status!=='Aprovado'&&matches(item));
-  const approved=records.filter(item=>item.status==='Aprovado'&&matches(item));
+  const compare=(first,second)=>{
+    const firstAge=readAge(first);
+    const secondAge=readAge(second);
+    const firstDate=Date.parse(first.created_at)||0;
+    const secondDate=Date.parse(second.created_at)||0;
+    if(sortBy==='age-asc'||sortBy==='age-desc'){
+      if(firstAge===null&&secondAge!==null)return 1;
+      if(secondAge===null&&firstAge!==null)return -1;
+      if(firstAge!==null&&secondAge!==null&&firstAge!==secondAge){
+        return sortBy==='age-asc'?firstAge-secondAge:secondAge-firstAge;
+      }
+    }
+    return sortBy==='oldest'?firstDate-secondDate:secondDate-firstDate;
+  };
+  const candidates=records.filter(item=>item.status!=='Aprovado'&&matches(item)).sort(compare);
+  const approved=records.filter(item=>item.status==='Aprovado'&&matches(item)).sort(compare);
 
   list.innerHTML=candidates.length
     ?candidates.map(item=>renderCandidate(item,false)).join('')
@@ -567,6 +594,8 @@ approvedList.addEventListener('input',event=>{
 
 searchInput.addEventListener('input',renderDashboard);
 statusFilter.addEventListener('change',renderDashboard);
+ageFilter.addEventListener('change',renderDashboard);
+sortFilter.addEventListener('change',renderDashboard);
 
 document.querySelector('#export-button').addEventListener('click',async event=>{
   const button=event.currentTarget;

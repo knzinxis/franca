@@ -35,8 +35,10 @@ button:disabled{opacity:.55;cursor:wait!important}
 .stat-card:nth-child(2) strong{color:#ffd166}
 .stat-card:nth-child(3) strong{color:#45d68a}
 .stat-card:nth-child(4) strong{color:#ff7583}
-.filter-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.35fr);gap:12px;padding:14px;margin:20px 0;background:#0a1224;border:1px solid #263553;border-radius:10px}
-.search-control,.status-control{display:grid;gap:6px;color:#cbd5e7;font-size:12px;font-weight:700}
+.filter-panel{display:grid;grid-template-columns:minmax(190px,1.4fr) repeat(3,minmax(130px,.8fr));gap:12px;padding:14px;margin:20px 0;background:#0a1224;border:1px solid #263553;border-radius:10px}
+.search-control,.status-control,.age-control,.sort-control{display:grid;gap:6px;color:#cbd5e7;font-size:12px;font-weight:700}
+.age-control select,.sort-control select{width:100%;min-height:46px;padding:10px 12px;border:1px solid #344463;border-radius:8px;background:#080f20;color:#fff;font:inherit}
+.age-control select:focus,.sort-control select:focus{outline:2px solid #0872f8;outline-offset:1px}
 .section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 12px}
 .section-heading h2{margin:0;font-size:17px;letter-spacing:1px}
 .section-heading .admin-clear{background:#a91d32}

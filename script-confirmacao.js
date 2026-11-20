@@ -11,12 +11,23 @@ form.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!form.reportValidity()) return;
   const fields=Object.fromEntries(new FormData(form).entries());
+  if(fields.website.trim()){
+    document.getElementById('formMessage').textContent='Não foi possível validar a inscrição. Revise o formulário e tente novamente.';
+    return;
+  }
+  const phoneDigits=fields.whatsapp.replace(/\D/g,'');
+  if(phoneDigits.length<10||phoneDigits.length>15){
+    document.getElementById('formMessage').textContent='Informe um número de WhatsApp válido, incluindo o DDD.';
+    form.elements.whatsapp.focus();
+    return;
+  }
   const funcoes=[...form.querySelectorAll('input[name="funcao"]:checked')].map(input=>input.value).join(', ');
   if(!funcoes){
     document.getElementById('formMessage').textContent='Selecione pelo menos uma função.';
     return;
   }
   const submitButton=form.querySelector('button[type="submit"]');
+  document.getElementById('formMessage').textContent='';
   submitButton.disabled=true;
   const recruit={
     nome_completo:fields.nomeCompleto,
