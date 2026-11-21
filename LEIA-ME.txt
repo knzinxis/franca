@@ -7,18 +7,21 @@ ARQUIVOS
 - admin.html: painel privado de recrutamento.
 - admin.js e admin.css: autenticação e funções do painel.
 - supabase-admin-security.sql: tabelas, histórico e políticas de acesso do Supabase.
+- supabase-guild-roster.sql: tabela compartilhada para os 55 membros da guilda.
 - supabase-add-age.sql: adiciona o campo idade e libera a inserção pública desse campo.
 
 CONFIGURAÇÃO OBRIGATÓRIA DO PAINEL
 1. Abra o SQL Editor do projeto Supabase e execute todo o arquivo
    supabase-admin-security.sql.
-2. No Supabase, crie a conta do administrador em Authentication > Users.
-3. Copie o UUID desse usuário e cadastre a permissão executando:
+2. Execute também supabase-guild-roster.sql para criar os 55 espaços da tabela
+   compartilhada de membros.
+3. No Supabase, crie a conta do administrador em Authentication > Users.
+4. Copie o UUID desse usuário e cadastre a permissão executando:
 
    insert into public.admin_users (user_id)
    values ('UUID-DO-USUARIO');
 
-4. Abra admin.html e entre com o e-mail e a senha dessa conta.
+5. Abra admin.html e entre com o e-mail e a senha dessa conta.
 
 ATUALIZAÇÃO DO CAMPO IDADE
 Para atualizar um banco já configurado, execute supabase-add-age.sql no SQL Editor
@@ -41,7 +44,7 @@ FUNÇÕES DO PAINEL
 - Ao aprovar, o candidato sai automaticamente da fila pendente.
 - O botão "Excluir pendentes" preserva aprovações e exclui apenas pendências.
 - Login administrativo em tela dedicada com identidade visual.
-- Navegação lateral no computador e topo compacto no celular.
+- Navegação lateral no computador e menu horizontal rolável no celular.
 - Busca por nome, idade, nick, ID e WhatsApp; filtros por status e faixa etária.
 - Ordenação por data de inscrição e idade.
 - Contadores de inscrições e atualização manual/automática.
@@ -49,6 +52,7 @@ FUNÇÕES DO PAINEL
 - Confirmação antes de rejeitar, remover ou excluir inscrições.
 - Exportação CSV com erros informados na tela.
 - Observações internas e histórico das decisões.
+- Tabela compartilhada de 55 membros com Nick, ID, honra semanal e pontos da Guerra de Guilda; alterações são salvas automaticamente.
 - Layout responsivo para celular e computador.
 
 SITE PÚBLICO

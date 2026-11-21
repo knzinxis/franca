@@ -179,6 +179,29 @@ button:disabled { opacity: .55; cursor: wait !important; }
 .approved-section { padding-top: 20px; border-top: 1px solid var(--line); }
 .rejected-section { padding-top: 20px; border-top: 1px solid rgba(240,68,82,.16); }
 .rejected-section .section-heading p { color: #ff8793; }
+.roster-section { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+.roster-help { max-width: 760px; margin: -3px 0 13px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.roster-table-scroll { overflow-x: auto; border: 1px solid var(--line); background: rgba(8,12,19,.78); }
+.roster-table { width: 100%; min-width: 720px; border-collapse: collapse; table-layout: fixed; }
+.roster-table caption { padding: 11px 14px; border-bottom: 1px solid var(--line); color: #8794a8; font-size: 9px; font-weight: 800; letter-spacing: .8px; text-align: left; text-transform: uppercase; }
+.roster-table th, .roster-table td { border: 1px solid rgba(180,199,229,.13); }
+.roster-table th { padding: 12px 14px; background: rgba(20,115,255,.08); color: #bac8dc; font-size: 9px; font-weight: 900; letter-spacing: 1px; text-align: left; }
+.roster-table th:first-child { width: 46%; }
+.roster-table th:nth-child(2), .roster-table th:nth-child(3) { width: 27%; }
+.roster-table td { padding: 9px 11px; vertical-align: middle; }
+.roster-table tbody tr:nth-child(even) { background: rgba(255,255,255,.018); }
+.roster-table tbody tr:hover { background: rgba(20,115,255,.045); }
+.roster-member-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; color: #8794a8; font-size: 8px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+.roster-member-heading strong { color: var(--blue-bright); font-size: 10px; }
+.roster-identity-fields { display: grid; gap: 6px; }
+.roster-identity-fields label, .roster-value-field { display: grid; gap: 4px; color: #aab6c8; font-size: 8px; font-weight: 900; letter-spacing: .7px; text-transform: uppercase; }
+.roster-table input { width: 100%; min-width: 0; min-height: 35px; padding: 0 9px; border: 1px solid rgba(180,199,229,.18); border-radius: 3px; outline: 0; background: #080c13; color: white; font-size: 11px; text-transform: none; }
+.roster-table input:focus { border-color: var(--blue-bright); box-shadow: 0 0 0 3px rgba(20,115,255,.1); }
+.roster-value-field input { min-height: 44px; font-size: 14px; font-weight: 800; text-align: center; }
+.roster-row-status { display: block; min-height: 0; margin-top: 6px; color: var(--muted); font-size: 8px; font-weight: 800; }
+.roster-row-status:empty { display: none; }
+.roster-row-status.success { color: var(--green); }
+.roster-row-status.error { color: #ff8793; }
 
 @media (max-width: 980px) {
   .dashboard { grid-template-columns: 190px minmax(0, 1fr); }
@@ -197,9 +220,10 @@ button:disabled { opacity: .55; cursor: wait !important; }
   .login-panel { min-height: 390px; padding: 28px 20px; }
   .login-heading { margin: 32px 0 24px; }
   .dashboard { display: block; }
-  .dashboard-sidebar { position: static; display: flex; height: auto; align-items: center; flex-direction: row; justify-content: space-between; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .dashboard-sidebar { position: static; display: flex; height: auto; align-items: center; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
   .sidebar-brand { margin: 0; }
-  .dashboard-nav { display: none; }
+  .dashboard-nav { display: flex; order: 3; width: 100%; flex: 1 0 100%; gap: 4px; overflow-x: auto; padding-top: 10px; }
+  .dashboard-nav a { min-height: 36px; flex: 0 0 auto; padding: 0 9px; font-size: 10px; white-space: nowrap; }
   .sidebar-logout { width: 42px; height: 42px; margin: 0; justify-content: center; overflow: hidden; color: transparent; }
   .sidebar-logout span { color: #aab5c4; }
   .dashboard-main { padding: 22px 14px 40px; }

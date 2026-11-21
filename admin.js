@@ -10,6 +10,8 @@ const passwordResetForm=document.querySelector('#password-reset-form');
 const passwordResetMessage=document.querySelector('#password-reset-message');
 const panel=document.querySelector('#panel');
 const panelMessage=document.querySelector('#panel-message');
+const rosterMessage=document.querySelector('#guild-roster-message');
+const rosterBody=document.querySelector('#guild-roster-body');
 const list=document.querySelector('#candidate-list');
 const approvedList=document.querySelector('#approved-list');
 const rejectedList=document.querySelector('#rejected-list');
@@ -164,6 +166,33 @@ async function getRecords(){
   return response.json();
 }
 
+async function getGuildRoster(){
+  const response=await authenticatedFetch('/rest/v1/guild_roster?select=*&order=slot.asc');
+  const roster=await response.json();
+  if(!Array.isArray(roster)||roster.length!==55||roster.some((member,index)=>Number(member.slot)!==index+1)){
+    throw new Error('A tabela precisa conter as 55 posições. Execute supabase-guild-roster.sql no SQL Editor do Supabase.');
+  }
+  return roster;
+}
+
+async function updateGuildRosterField(slot,field,value){
+  const allowedFields=['nickname','game_id','weekly_honor','guild_war_points'];
+  if(!allowedFields.includes(field))throw new Error('Campo inválido.');
+  const params=new URLSearchParams({slot:`eq.${slot}`});
+  const response=await authenticatedFetch(`/rest/v1/guild_roster?${params}`,{
+    method:'PATCH',
+    headers:{
+      'Content-Type':'application/json',
+      Prefer:'return=representation'
+    },
+    body:JSON.stringify({[field]:value})
+  });
+  const updated=await response.json();
+  if(!Array.isArray(updated)||updated.length!==1){
+    throw new Error('Nenhum espaço foi atualizado. Atualize a tabela e tente novamente.');
+  }
+}
+
 async function getRecord(id){
   const params=new URLSearchParams({select:'*',id:`eq.${id}`,limit:'1'});
   const response=await authenticatedFetch(`/rest/v1/recruitments?${params}`);
@@ -196,6 +225,43 @@ async function render(){
   }catch(error){
     showMessage(panelMessage,`Não foi possível carregar o painel: ${error.message}`,'error');
   }
+}
+
+async function loadGuildRoster(){
+  try{
+    renderGuildRoster(await getGuildRoster());
+    showMessage(rosterMessage,'','');
+  }catch(error){
+    rosterBody.innerHTML='<tr><td colspan="3">A tabela não pôde ser carregada. Confira a configuração do Supabase.</td></tr>';
+    showMessage(rosterMessage,`Não foi possível carregar a tabela: ${error.message} Execute supabase-guild-roster.sql no SQL Editor do Supabase e atualize o painel.`,'error');
+  }
+}
+
+async function refreshPanel(){
+  await Promise.all([render(),loadGuildRoster()]);
+}
+
+function renderGuildRoster(roster){
+  rosterBody.innerHTML=roster.map(member=>{
+    const slot=Number(member.slot);
+    const memberNumber=String(slot).padStart(2,'0');
+    const nickname=escapeAttribute(member.nickname||'');
+    const gameId=escapeAttribute(member.game_id||'');
+    const weeklyHonor=member.weekly_honor===null?'':escapeAttribute(member.weekly_honor);
+    const guildWarPoints=member.guild_war_points===null?'':escapeAttribute(member.guild_war_points);
+    return `<tr data-roster-row="${slot}">
+      <td class="roster-identity-cell">
+        <div class="roster-member-heading"><span>MEMBRO</span><strong>${memberNumber}</strong></div>
+        <div class="roster-identity-fields">
+          <label for="roster-nickname-${slot}"><span>Nick</span><input id="roster-nickname-${slot}" type="text" maxlength="80" autocomplete="off" data-roster-slot="${slot}" data-roster-field="nickname" aria-label="Nick do membro ${memberNumber}" value="${nickname}"></label>
+          <label for="roster-game-id-${slot}"><span>ID</span><input id="roster-game-id-${slot}" type="text" inputmode="numeric" maxlength="24" autocomplete="off" data-roster-slot="${slot}" data-roster-field="game_id" aria-label="ID do membro ${memberNumber}" value="${gameId}"></label>
+        </div>
+        <span class="roster-row-status" data-roster-status aria-live="polite"></span>
+      </td>
+      <td><label class="roster-value-field"><span>Honra</span><input type="number" min="0" step="1" data-roster-slot="${slot}" data-roster-field="weekly_honor" aria-label="Honra semanal do membro ${memberNumber}" value="${weeklyHonor}"></label></td>
+      <td><label class="roster-value-field"><span>Pontos</span><input type="number" min="0" step="1" data-roster-slot="${slot}" data-roster-field="guild_war_points" aria-label="Pontos de Guerra de Guilda do membro ${memberNumber}" value="${guildWarPoints}"></label></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderDashboard(){
@@ -489,7 +555,7 @@ loginForm.addEventListener('submit',async event=>{
     loginBox.classList.add('hidden');
     panel.classList.remove('hidden');
     showMessage(loginMessage,'','');
-    await render();
+    await refreshPanel();
   }catch(error){
     showMessage(loginMessage,error.message,'error');
   }finally{
@@ -654,7 +720,42 @@ document.querySelector('#clear-button').addEventListener('click',async event=>{
   }
 });
 
-document.querySelector('#refresh-button').addEventListener('click',render);
+rosterBody.addEventListener('change',async event=>{
+  const input=event.target.closest('input[data-roster-field]');
+  if(!input||!input.reportValidity())return;
+  const slot=Number(input.dataset.rosterSlot);
+  const field=input.dataset.rosterField;
+  const row=input.closest('[data-roster-row]');
+  const status=row.querySelector('[data-roster-status]');
+  let value=input.value;
+  if(input.type==='number'){
+    value=input.value===''?null:Number(input.value);
+    if(value!==null&&(!Number.isSafeInteger(value)||value<0)){
+      showMessage(rosterMessage,'Use um número inteiro igual ou maior que zero.','error');
+      input.focus();
+      return;
+    }
+  }else{
+    value=input.value.trim();
+  }
+  status.className='roster-row-status';
+  status.textContent='Salvando...';
+  try{
+    await updateGuildRosterField(slot,field,value);
+    showMessage(rosterMessage,'','');
+    status.classList.add('success');
+    status.textContent='Salvo';
+    window.setTimeout(()=>{
+      if(status.isConnected&&status.textContent==='Salvo')status.textContent='';
+    },1800);
+  }catch(error){
+    status.classList.add('error');
+    status.textContent='Falha ao salvar';
+    showMessage(rosterMessage,`Não foi possível salvar o membro ${String(slot).padStart(2,'0')}: ${error.message}`,'error');
+  }
+});
+
+document.querySelector('#refresh-button').addEventListener('click',refreshPanel);
 
 async function initialize(){
   if(getPasswordRecoveryToken()){
@@ -668,7 +769,7 @@ async function initialize(){
   panel.classList.remove('hidden');
   try{
     await verifyAdmin();
-    await render();
+    await refreshPanel();
   }catch(error){
     clearSession();
     panel.classList.add('hidden');

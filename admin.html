@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#05070c">
   <title>Painel administrativo | Guilda França</title>
-  <link rel="stylesheet" href="admin.css?v=20261120k">
+  <link rel="stylesheet" href="admin.css?v=20261121-roster">
 </head>
 <body class="admin-body">
   <main class="admin-shell">
@@ -74,6 +74,7 @@
           <a href="#applications-title"><span aria-hidden="true">♙</span>Pendentes</a>
           <a href="#rejected-title"><span aria-hidden="true">×</span>Reprovados</a>
           <a href="#approved-title"><span aria-hidden="true">♛</span>Recrutamentos aprovados</a>
+          <a href="#guild-roster-title"><span aria-hidden="true">▤</span>Tabela de membros</a>
         </nav>
         <button class="sidebar-logout" id="logout-button" type="button"><span aria-hidden="true">↗</span> Encerrar sessão</button>
       </aside>
@@ -175,9 +176,35 @@
           </div>
           <div class="candidate-list" id="approved-list"></div>
         </section>
+
+        <section class="roster-section" aria-labelledby="guild-roster-title">
+          <div class="section-heading">
+            <div>
+              <p>ELENCO DA GUILDA</p>
+              <h2 id="guild-roster-title">Controle dos 55 membros</h2>
+            </div>
+          </div>
+          <p class="roster-help">Preencha o Nick e o ID de cada jogador, a honra semanal e os pontos individuais da Guerra de Guilda. As alterações são salvas automaticamente e compartilhadas com os administradores.</p>
+          <p class="notice" id="guild-roster-message" role="status" aria-live="polite"></p>
+          <div class="roster-table-scroll" role="region" aria-label="Tabela dos membros, com rolagem horizontal" tabindex="0">
+            <table class="roster-table">
+              <caption>55 espaços individuais para preenchimento</caption>
+              <thead>
+                <tr>
+                  <th scope="col">JOGADOR — NICK E ID</th>
+                  <th scope="col">HONRA SEMANAL</th>
+                  <th scope="col">GUERRA DE GUILDA</th>
+                </tr>
+              </thead>
+              <tbody id="guild-roster-body">
+                <tr><td colspan="3">Carregando tabela de membros...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </section>
   </main>
-  <script src="admin.js?v=20261120k"></script>
+  <script src="admin.js?v=20261121-roster"></script>
 </body>
 </html>
