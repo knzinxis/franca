@@ -175,22 +175,71 @@ async function getGuildRoster(){
   return roster;
 }
 
-async function updateGuildRosterField(slot,field,value){
-  const allowedFields=['nickname','game_id','weekly_honor','guild_war_points'];
-  if(!allowedFields.includes(field))throw new Error('Campo inválido.');
-  const params=new URLSearchParams({slot:`eq.${slot}`});
+async function patchGuildRoster(params,data){
+  const allowedFields=['nickname','game_id','weekly_honor','guild_war_points','recruitment_id'];
+  const fields=Object.keys(data);
+  if(!fields.length||fields.some(field=>!allowedFields.includes(field)))throw new Error('Campo inválido.');
   const response=await authenticatedFetch(`/rest/v1/guild_roster?${params}`,{
     method:'PATCH',
     headers:{
       'Content-Type':'application/json',
       Prefer:'return=representation'
     },
-    body:JSON.stringify({[field]:value})
+    body:JSON.stringify(data)
   });
   const updated=await response.json();
-  if(!Array.isArray(updated)||updated.length!==1){
+  if(!Array.isArray(updated)||updated.length>1){
+    throw new Error('A resposta do banco para a tabela de membros é inválida.');
+  }
+  return updated[0]||null;
+}
+
+async function updateGuildRosterField(slot,field,value){
+  const params=new URLSearchParams({slot:`eq.${slot}`});
+  const updated=await patchGuildRoster(params,{[field]:value});
+  if(!updated){
     throw new Error('Nenhum espaço foi atualizado. Atualize a tabela e tente novamente.');
   }
+  return updated;
+}
+
+function isEmptyGuildSlot(member){
+  return !String(member.nickname||'').trim()
+    &&!String(member.game_id||'').trim()
+    &&member.weekly_honor===null
+    &&member.guild_war_points===null
+    &&!member.recruitment_id;
+}
+
+async function addApprovedNickname(candidate){
+  const nickname=String(candidate.nick_jogo||'').trim();
+  if(!nickname)throw new Error('O recrutamento aprovado não tem Nick preenchido.');
+  const recruitmentId=String(candidate.id);
+  for(let attempt=0;attempt<55;attempt++){
+    const roster=await getGuildRoster();
+    if(roster.some(member=>String(member.recruitment_id||'')===recruitmentId)){
+      renderGuildRoster(roster);
+      return;
+    }
+    const emptySlot=roster.find(isEmptyGuildSlot);
+    if(!emptySlot)throw new Error('Não há espaços vazios na tabela dos 55 membros.');
+    const params=new URLSearchParams({
+      slot:`eq.${emptySlot.slot}`,
+      recruitment_id:'is.null',
+      nickname:'eq.',
+      game_id:'eq.',
+      weekly_honor:'is.null',
+      guild_war_points:'is.null'
+    });
+    const added=await patchGuildRoster(params,{
+      nickname,
+      recruitment_id:recruitmentId
+    });
+    if(!added)continue;
+    renderGuildRoster(roster.map(member=>Number(member.slot)===Number(added.slot)?added:member));
+    return;
+  }
+  throw new Error('Não foi possível reservar um espaço livre. Atualize a tabela e tente novamente.');
 }
 
 async function getRecord(id){
@@ -500,13 +549,23 @@ async function handlePanelAction(event,container){
       try{
         const candidate=await getRecord(id);
         await updateRecord(id,{status:'Aprovado',approved_at:new Date().toISOString()});
+        let rosterWarning='';
+        try{
+          await addApprovedNickname(candidate);
+        }catch(error){
+          rosterWarning=` O Nick não foi adicionado à tabela de membros: ${error.message}`;
+        }
         const phone=normalizeWhatsAppPhone(candidate.whatsapp);
         if(phone){
           openWhatsapp(phone,buildApprovalMessage(candidate),whatsappWindow);
-          showMessage(panelMessage,'Candidato aprovado. A mensagem está pronta no WhatsApp.','success');
+          showMessage(
+            panelMessage,
+            `Candidato aprovado. A mensagem está pronta no WhatsApp.${rosterWarning}`,
+            rosterWarning?'error':'success'
+          );
         }else{
           if(whatsappWindow)whatsappWindow.close();
-          showMessage(panelMessage,'Candidato aprovado, mas o WhatsApp cadastrado não é válido.','error');
+          showMessage(panelMessage,`Candidato aprovado, mas o WhatsApp cadastrado não é válido.${rosterWarning}`,'error');
         }
       }catch(error){
         if(whatsappWindow)whatsappWindow.close();

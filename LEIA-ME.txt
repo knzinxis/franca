@@ -53,6 +53,7 @@ FUNÇÕES DO PAINEL
 - Exportação CSV com erros informados na tela.
 - Observações internas e histórico das decisões.
 - Tabela compartilhada de 55 membros com Nick, ID, honra semanal e pontos da Guerra de Guilda; alterações são salvas automaticamente.
+- Nick de recrutamentos aprovados é preenchido automaticamente na próxima posição vazia.
 - Layout responsivo para celular e computador.
 
 SITE PÚBLICO
